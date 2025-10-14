@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.misana.finance.app""
+    namespace = "com.misana.finance.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
