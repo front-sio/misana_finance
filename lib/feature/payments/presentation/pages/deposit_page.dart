@@ -332,7 +332,7 @@ class _DepositPageState extends State<DepositPage> {
                           ),
                           const SizedBox(height: 12),
                           OutlinedButton.icon(
-                            onPressed: () => Navigator.of(context).pushNamed('/savings/new').then((_) => _reload()),
+                            onPressed: () => Navigator.of(context).pushNamed('/pots/new').then((_) => _reload()),
                             icon: const Icon(Icons.add),
                             label: Text(t(context, 'create_pot')),
                           ),

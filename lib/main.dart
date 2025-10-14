@@ -39,12 +39,7 @@ import 'feature/kyc/presentation/bloc/kyc_bloc.dart';
 import 'feature/kyc/presentation/bloc/kyc_event.dart';
 import 'feature/kyc/presentation/pages/kyc_verification_page.dart';
 
-// Savings (legacy)
-import 'feature/savings/data/datasources/savings_remote_data_source.dart';
-import 'feature/savings/data/repositories/savings_repository_impl.dart';
-import 'feature/savings/domain/savings_repository.dart';
-
-// New: Account + Pots + Payments
+// Account + Pots + Payments
 import 'feature/account/data/datasources/account_remote_data_source.dart';
 import 'feature/account/data/repositories/account_repository_impl.dart';
 import 'feature/account/domain/account_repository.dart';
@@ -89,10 +84,6 @@ void main() {
   final kycRemote = KycRemoteDataSource(apiClient);
   final KycRepository kycRepo = KycRepositoryImpl(kycRemote);
 
-  // Savings (legacy)
-  final savingsRemote = SavingsRemoteDataSource(apiClient);
-  final SavingsRepository savingsRepo = SavingsRepositoryImpl(savingsRemote);
-
   // Account
   final AccountRepository accountRepo = AccountRepositoryImpl(AccountRemoteDataSource(apiClient));
 
@@ -107,7 +98,6 @@ void main() {
       providers: [
         RepositoryProvider<HomeRepository>.value(value: homeRepo),
         RepositoryProvider<KycRepository>.value(value: kycRepo),
-        RepositoryProvider<SavingsRepository>.value(value: savingsRepo),
         RepositoryProvider<AccountRepository>.value(value: accountRepo),
         RepositoryProvider<PotsRepository>.value(value: potsRepo),
         RepositoryProvider<PaymentsRepository>.value(value: paymentsRepo),
