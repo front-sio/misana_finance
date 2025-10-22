@@ -5,27 +5,24 @@ abstract class KycEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-// Load KYC status history for a specific account (UUID)
 class KycLoadStatus extends KycEvent {
-  final String accountId;
-  KycLoadStatus({required this.accountId});
-
+  final String userId;
+  KycLoadStatus({required this.userId});
   @override
-  List<Object?> get props => [accountId];
+  List<Object?> get props => [userId];
 }
 
-// Submit KYC details
 class KycSubmit extends KycEvent {
-  final String accountId;
-  final String documentType; // "national_id" | "passport" | "driver_license"
+  final String userId;
+  final String documentType;
   final String documentNumber;
   final String fullName;
-  final String dateOfBirth;  // yyyy-MM-dd
+  final String dateOfBirth;
   final String? address;
-  final String? documentImageBase64; // data URI, e.g. "data:image/jpeg;base64,..."
+  final String? documentImageBase64;
 
   KycSubmit({
-    required this.accountId,
+    required this.userId,
     required this.documentType,
     required this.documentNumber,
     required this.fullName,
@@ -36,5 +33,5 @@ class KycSubmit extends KycEvent {
 
   @override
   List<Object?> get props =>
-      [accountId, documentType, documentNumber, fullName, dateOfBirth, address, documentImageBase64];
+      [userId, documentType, documentNumber, fullName, dateOfBirth, address, documentImageBase64];
 }

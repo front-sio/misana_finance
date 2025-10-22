@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         : context.read<LocaleCubit>().state.languageCode;
 
     final sw = {
-      'title': 'Misana Finance',
+      'title': 'Misana Stawi',
       'subtitle': 'Ingia kwa barua pepe, simu au jina la mtumiaji',
       'identifier': 'Barua pepe, Simu au Jina la mtumiaji',
       'password': 'Nenosiri',
@@ -98,7 +98,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       'too_many': 'Maombi mengi. Jaribu tena baadaye.',
     };
     final en = {
-      'title': 'Misana Finance',
+      'title': 'Misana Stawi',
       'subtitle': 'Login with email, phone, or username',
       'identifier': 'Email, Phone, or Username',
       'password': 'Password',

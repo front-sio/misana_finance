@@ -1,18 +1,13 @@
 abstract class KycRepository {
-  // Returns history (latest first)
-  Future<List<Map<String, dynamic>>> getStatus(String accountId);
-
-  // Submit KYC payload (JSON). For multipart uploads, add a separate method.
-  Future<Map<String, dynamic>> submit({
-    required String accountId,
-    required String documentType, // "national_id" | "passport" | "driver_license"
+  Future<List<Map<String, dynamic>>> getStatusByUser(String userId);
+  Future<Map<String, dynamic>> submitByUser({
+    required String userId,
+    required String documentType,
     required String documentNumber,
     required String fullName,
-    required String dateOfBirth, // yyyy-MM-dd
+    required String dateOfBirth,
     String? address,
-    String? documentImageBase64, // data URI e.g. "data:image/jpeg;base64,..."
+    String? documentImageBase64,
   });
-
-  // { is_verified: bool }
-  Future<Map<String, dynamic>> checkVerified(String accountId);
+  Future<Map<String, dynamic>> checkVerifiedByUser(String userId);
 }

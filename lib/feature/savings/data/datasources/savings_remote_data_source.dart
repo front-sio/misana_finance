@@ -13,8 +13,8 @@ class SavingsRemoteDataSource {
   /// Backend expects:
   /// - name (String, 2..120)
   /// - goal_amount (number)
-  /// - purpose (String?, <= 300)
-  /// - account_id (uuid)
+  /// - purpose (String, <= 300)    // send empty string when user didn't provide one
+  /// - account_id (uuid)           // internal account-service UUID
   /// - withdrawal_condition ("amount" | "time" | "both")
   /// - duration_months (int >= 1)
   Future<Map<String, dynamic>> createPot({
@@ -25,14 +25,23 @@ class SavingsRemoteDataSource {
     String? purpose,
     required String withdrawalCondition,
   }) async {
+    // Normalize goal number (strip group separators if any)
+    final String raw = goalAmount.trim();
+    final String normalized = raw.replaceAll(',', '');
+    final double parsedGoal = double.parse(normalized);
+
+    // Always send purpose as a string. Backend rejects null.
+    final String safePurpose = (purpose ?? '').trim();
+
     final payload = <String, dynamic>{
       'name': name.trim(),
-      'goal_amount': double.parse(goalAmount),
+      'goal_amount': parsedGoal,
       'account_id': accountId,
-      if (purpose != null && purpose.isNotEmpty) 'purpose': purpose,
+      'purpose': safePurpose, // always present and string
       'withdrawal_condition': withdrawalCondition,
       'duration_months': durationMonths,
     };
+
     final Response res = await client.post('/saving/pots', data: payload);
     final data = res.data;
     if (data is Map<String, dynamic>) return data;

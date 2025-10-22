@@ -5,7 +5,7 @@ import 'package:misana_finance_app/core/format/ammount_formatter.dart';
 
 
 class AppLocales {
-  static const Locale defaultLocale = Locale('sw', 'TZ');
+  static const Locale defaultLocale = Locale('en', 'US');
 
   static const supportedLocales = <Locale>[
     Locale('sw', 'TZ'),
@@ -18,7 +18,6 @@ class AppLocales {
     GlobalWidgetsLocalizations.delegate,
   ];
 
-  /// Call once before runApp to lock default locale/currency for intl.
   static void bootstrap({
     String locale = 'sw_TZ',
     String currency = 'TZS',

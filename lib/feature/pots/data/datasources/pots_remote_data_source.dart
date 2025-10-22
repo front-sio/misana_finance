@@ -13,11 +13,14 @@ class PotsRemoteDataSource {
     required String withdrawalCondition,
     required int durationMonths,
   }) async {
+    // Backend expects a string for purpose (not null)
+    final String safePurpose = (purpose ?? '').trim();
+
     final Response res = await client.post('/saving/pots', data: {
-      'name': name,
+      'name': name.trim(),
       'goal_amount': goalAmount,
-      'purpose': purpose,
-      'account_id': accountId,
+      'account_id': accountId,                 // MUST be internal UUID
+      'purpose': safePurpose,                  // always string
       'withdrawal_condition': withdrawalCondition,
       'duration_months': durationMonths,
     });

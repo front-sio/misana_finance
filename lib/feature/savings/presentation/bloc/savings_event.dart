@@ -1,13 +1,14 @@
 import 'package:equatable/equatable.dart';
 
 abstract class SavingsEvent extends Equatable {
+  const SavingsEvent();
   @override
   List<Object?> get props => [];
 }
 
 class SavingsLoad extends SavingsEvent {
   final String userId;
-  SavingsLoad(this.userId);
+  const SavingsLoad(this.userId);
 
   @override
   List<Object?> get props => [userId];
@@ -15,24 +16,24 @@ class SavingsLoad extends SavingsEvent {
 
 class SavingsCreate extends SavingsEvent {
   final String name;
-  final String goalAmount;
+  final String goalAmount; // decimal string
+  final String accountId;  // internal UUID (account-service)
   final int durationMonths;
-  final String? purpose;
-  final String withdrawalCondition;
-  final String accountId; // required by backend
-  final String userId; // reload after create
+  final String? purpose;   // will be normalized by data layer
+  final String withdrawalCondition; // "amount" | "time" | "both"
+  final String userId;
 
-  SavingsCreate({
+  const SavingsCreate({
     required this.name,
     required this.goalAmount,
-    required this.durationMonths,
-    required this.withdrawalCondition,
     required this.accountId,
-    this.purpose,
+    required this.durationMonths,
+    required this.purpose,
+    required this.withdrawalCondition,
     required this.userId,
   });
 
   @override
   List<Object?> get props =>
-      [name, goalAmount, durationMonths, purpose, withdrawalCondition, accountId, userId];
+      [name, goalAmount, accountId, durationMonths, purpose, withdrawalCondition, userId];
 }

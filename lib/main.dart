@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:misana_finance_app/core/ui/app_messanger.dart';
 import 'package:misana_finance_app/feature/home/presentation/bloc/home_bloc.dart';
+import 'package:misana_finance_app/feature/kyc/data/repositories/kyc_repository_impl.dart';
 import 'package:misana_finance_app/feature/splash/presentation/pages/splash_page.dart';
 import 'core/i18n/app_locales.dart';
 import 'core/i18n/locale_cubit.dart';
@@ -31,9 +32,8 @@ import 'feature/home/data/datasources/home_remote_data_source.dart';
 import 'feature/home/data/repositories/home_repository_impl.dart';
 import 'feature/home/domain/home_repository.dart';
 
-// KYC
+// KYC (now userId-based)
 import 'feature/kyc/data/datasources/kyc_remote_data_source.dart';
-import 'feature/kyc/data/repositories/kyc_repository_impl.dart';
 import 'feature/kyc/domain/kyc_repository.dart';
 import 'feature/kyc/presentation/bloc/kyc_bloc.dart';
 import 'feature/kyc/presentation/bloc/kyc_event.dart';
@@ -63,7 +63,7 @@ import 'feature/payments/presentation/pages/transactions_page.dart';
 
 void main() {
   AppLocales.bootstrap(
-    locale: 'sw_TZ',
+    locale: 'en_US',
     currency: 'TZS',
     symbol: 'TSh',
     decimalDigits: 0,
@@ -85,7 +85,7 @@ void main() {
   final homeRemote = HomeRemoteDataSource(apiClient);
   final HomeRepository homeRepo = HomeRepositoryImpl(homeRemote);
 
-  // KYC
+  // KYC (userId-based repo)
   final kycRemote = KycRemoteDataSource(apiClient);
   final KycRepository kycRepo = KycRepositoryImpl(kycRemote);
 
@@ -155,7 +155,6 @@ class MisanaApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
           ],
           initialRoute: '/splash',
-          // Use the route's own BuildContext to resolve RepositoryProviders correctly
           routes: {
             '/splash': (_) => const SplashPage(),
             '/login': (_) => const LoginPage(),
@@ -163,14 +162,11 @@ class MisanaApp extends StatelessWidget {
             '/verify': (_) => const VerifyAccountPage(usernameOrEmail: ''),
             '/home': (_) => const home_ui.HomePage(),
 
-            // KYC
+            // KYC (userId-based)
             '/kyc': (routeCtx) {
-              final accountId = (routeCtx.read<AuthCubit>().state.user?['id'] ?? '').toString();
               return BlocProvider(
-                create: (_) =>
-                    KycBloc(RepositoryProvider.of<KycRepository>(routeCtx))
-                      ..add(KycLoadStatus(accountId: accountId)),
-                child: KycVerificationPage(accountId: accountId),
+                create: (_) => KycBloc(RepositoryProvider.of<KycRepository>(routeCtx)),
+                child: const KycVerificationPage(),
               );
             },
 
