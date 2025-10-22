@@ -9,6 +9,7 @@ import 'package:misana_finance_app/core/ui/decimal_text_input_formatter.dart';
 import 'package:misana_finance_app/feature/savings/presentation/widgets/plan_metrics.dart';
 
 import '../../../session/auth_cubit.dart';
+import '../../../account/domain/account_repository.dart';
 import '../../domain/savings_repository.dart';
 import '../bloc/savings_bloc.dart';
 import '../bloc/savings_event.dart';
@@ -35,7 +36,7 @@ class _SavingsCreatePageState extends State<SavingsCreatePage> {
   final _purposeFocus = FocusNode();
 
   String _condition = 'amount'; // amount | time | both
-  String _cadence = 'monthly'; // daily | weekly | monthly (UI assist only)
+  String _cadence = 'monthly'; // daily | weekly | monthly
 
   @override
   void initState() {
@@ -67,7 +68,7 @@ class _SavingsCreatePageState extends State<SavingsCreatePage> {
     final g = double.tryParse(_goalCtrl.text.trim()) ?? 0.0;
     final m = int.tryParse(_durationCtrl.text.trim()) ?? 0;
     return SavingsPlan(goalAmount: g, durationMonths: m);
-    }
+  }
 
   void _applyPreset({required int months, double? goal}) {
     if (goal != null) _goalCtrl.text = goal.toStringAsFixed(0);
@@ -110,35 +111,91 @@ class _SavingsCreatePageState extends State<SavingsCreatePage> {
     return 'Hitilafu imetokea. Tafadhali jaribu tena.';
   }
 
-  void _submit(BuildContext ctx) {
+  // Resolve the internal account UUID required by backend
+  Future<String?> _resolveAccountUuid(BuildContext ctx) async {
+    final user = ctx.read<AuthCubit>().state.user ?? {};
+    final userId = (user['id'] ?? '').toString();
+
+    String? uuidFromUser() {
+      // Nested object form
+      if (user['account'] is Map) {
+        final id = (user['account']['id'] ?? '').toString();
+        if (_isUuid(id)) return id;
+        final id2 = (user['account']['account_id'] ?? '').toString();
+        if (_isUuid(id2)) return id2;
+        final id3 = (user['account']['uuid'] ?? '').toString();
+        if (_isUuid(id3)) return id3;
+      }
+      // flat fields variants
+      for (final key in ['account_id', 'accountId', 'uuid', 'accountUuid']) {
+        final v = (user[key] ?? '').toString();
+        if (_isUuid(v)) return v;
+      }
+      return null;
+    }
+
+    final direct = uuidFromUser();
+    if (direct != null) return direct;
+
+    if (userId.isEmpty) return null;
+
+    try {
+      final repo = RepositoryProvider.of<AccountRepository>(ctx);
+      final acc = await repo.getByUser(userId);
+      // Try common keys on the account response
+      for (final key in ['id', 'account_id', 'uuid']) {
+        final v = (acc?[key] ?? '').toString();
+        if (_isUuid(v)) return v;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _isUuid(String v) {
+    if (v.isEmpty) return false;
+    final re = RegExp(
+        r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$');
+    return re.hasMatch(v);
+  }
+
+  Future<void> _submit(BuildContext ctx) async {
     if (!_formKey.currentState!.validate()) return;
 
     final user = ctx.read<AuthCubit>().state.user ?? {};
     final userId = (user['id'] ?? '').toString();
-    // Backend needs internal account_id (uuid) from account-service
-    final accountId = (user['account_id'] ?? user['accountId'] ?? '').toString();
-
     if (userId.isEmpty) {
-      ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text("Hatukutambua mtumiaji. Tafadhali ingia tena.")));
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(content: Text("Hatukutambua mtumiaji. Tafadhali ingia tena.")),
+      );
       return;
     }
-    if (accountId.isEmpty) {
-      ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
-        content: Text("Fungua au unganisha akaunti yako ya Selcom kwanza."),
-      ));
-      Navigator.of(ctx).pushNamed('/'); // optionally take user home to open account
+
+    final accountId = await _resolveAccountUuid(ctx);
+    if (!mounted) return;
+
+    if (accountId == null || !_isUuid(accountId)) {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(
+          content: Text("Fungua au unganisha akaunti yako ya Selcom kwanza."),
+        ),
+      );
+      Navigator.of(ctx).pushNamed('/');
       return;
     }
+
+    final purposeStr = _purposeCtrl.text.trim(); // Always a string
 
     ctx.read<SavingsBloc>().add(SavingsCreate(
-      name: _nameCtrl.text.trim(),
-      goalAmount: _goalCtrl.text.trim(),
-      accountId: accountId,
-      durationMonths: int.parse(_durationCtrl.text.trim()),
-      purpose: _purposeCtrl.text.trim().isEmpty ? null : _purposeCtrl.text.trim(),
-      withdrawalCondition: _condition,
-      userId: userId,
-    ));
+          name: _nameCtrl.text.trim(),
+          goalAmount: _goalCtrl.text.trim(),
+          accountId: accountId,
+          durationMonths: int.parse(_durationCtrl.text.trim()),
+          purpose: purposeStr,
+          withdrawalCondition: _condition,
+          userId: userId,
+        ));
   }
 
   @override
@@ -177,7 +234,8 @@ class _SavingsCreatePageState extends State<SavingsCreatePage> {
         body: BlocConsumer<SavingsBloc, SavingsState>(
           listener: (ctx, state) async {
             if (state.error != null) {
-              ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(state.error!)));
+              final msg = _humanizeError(state.error!);
+              ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(msg)));
             } else if (!state.creating && state.accounts.isNotEmpty) {
               if (mounted) {
                 ScaffoldMessenger.of(ctx).showSnackBar(
@@ -203,7 +261,6 @@ class _SavingsCreatePageState extends State<SavingsCreatePage> {
                         _HeroHeader(),
                         const SizedBox(height: 16),
 
-                        // Magic assistant panel
                         _AssistantPanel(
                           cadence: _cadence,
                           onCadenceChanged: (v) => setState(() => _cadence = v),
@@ -214,7 +271,6 @@ class _SavingsCreatePageState extends State<SavingsCreatePage> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Form fields grouped
                         _SectionCard(
                           title: "Taarifa za Mpango",
                           child: Column(
@@ -309,7 +365,6 @@ class _SavingsCreatePageState extends State<SavingsCreatePage> {
                                   },
                                 ),
                               const SizedBox(height: 12),
-                              // Fancy duration slider (magic)
                               _DurationSlider(
                                 valueGetter: () => int.tryParse(_durationCtrl.text.trim()) ?? 1,
                                 onChanged: (v) {
@@ -353,7 +408,7 @@ class _SavingsCreatePageState extends State<SavingsCreatePage> {
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              _InfoBanner(
+                              const _InfoBanner(
                                 text: "Una saa 24 kubadili mpango huu baada ya kuunda.",
                               ),
                             ],
@@ -376,7 +431,6 @@ class _SavingsCreatePageState extends State<SavingsCreatePage> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Kadirio la michango (assistant)
                         _SectionCard(
                           title: "Kadirio la michango",
                           child: Column(

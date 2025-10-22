@@ -4,12 +4,8 @@ class KycState extends Equatable {
   final bool loading;
   final bool submitting;
   final String? error;
-
-  // Latest status derived from history
-  final String status; // pending | approved | rejected | unknown
+  final String status; // verified | pending | rejected | unknown
   final String? message;
-
-  // Full history (latest first)
   final List<Map<String, dynamic>> history;
 
   const KycState({

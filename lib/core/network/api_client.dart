@@ -58,9 +58,7 @@ class ApiClient {
         onRequest: (options, handler) async {
           final skipAuth = options.extra['skipAuth'] == true;
 
-          // Debug: log the final URL we’re about to hit
           if (kDebugMode) {
-            // options.uri reflects baseUrl + path + query
             // ignore: avoid_print
             print('[HTTP] ${options.method} ${options.uri}');
           }
@@ -99,7 +97,6 @@ class ApiClient {
           final status = error.response?.statusCode ?? 0;
           final req = error.requestOptions;
 
-          // Helpful 404 hint (commonly caused by empty IDs or wrong base URL)
           if (status == 404 && kDebugMode) {
             // ignore: avoid_print
             print(
@@ -112,6 +109,12 @@ class ApiClient {
           final isLogin = path == '/auth/login';
           final isRefresh = path == '/auth/refresh';
           final skipRefresh = req.extra['skipRefresh'] == true;
+
+          // NEW: allow suppressing auto-logout (e.g., for /auth/me on app start)
+          final pathLower = path.toLowerCase();
+          final allow401NoLogout = req.extra['allow401NoLogout'] == true ||
+              pathLower == '/auth/me' ||
+              pathLower.endsWith('/auth/me');
 
           if (status == 401 && !isLogin && !isRefresh && !skipRefresh) {
             final retried = req.extra['_retried'] == true;
@@ -144,7 +147,15 @@ class ApiClient {
                 return handler.resolve(response);
               }
             } catch (_) {
-              // continue to logout
+              // continue flow below
+            }
+
+            // If refresh failed and caller opted-out of auto logout, just pass the error back.
+            if (allow401NoLogout) {
+              if (req.extra['suppressToast'] != true) {
+                AppMessenger.warn('Session check failed (401).');
+              }
+              return handler.next(error);
             }
 
             await _logoutToLogin();
@@ -213,7 +224,6 @@ class ApiClient {
     );
   }
 
-  // Convenience methods
   Future<Response<T>> post<T>(
     String path, {
     Map<String, dynamic>? data,
@@ -282,7 +292,6 @@ class ApiClient {
     );
   }
 
-  // Shared refresh future
   Future<String?> _refreshAccessToken() async {
     if (_refreshing != null) return await _refreshing!;
 
@@ -362,19 +371,15 @@ class ApiClient {
     return Duration(milliseconds: ms + jitter);
   }
 
-  // ----- Helpers -----
-
   static String _normalizeBaseUrl(String url) {
     var u = url.trim();
     if (u.endsWith('/')) u = u.substring(0, u.length - 1);
 
-    // If someone accidentally ships localhost in a device build, at least try to make it work on emulators.
     if (u.contains('localhost')) {
       if (!kIsWeb && Platform.isAndroid) {
-        // Android emulator's host loopback
         u = u.replaceFirst('localhost', '10.0.2.2');
       } else if (!kIsWeb && Platform.isIOS) {
-        // iOS simulator supports localhost; leave as-is
+        // leave as is
       }
     }
     return u;
@@ -428,7 +433,7 @@ class ApiClient {
         if (code == 422) return withUrl('Validation error. Please check the fields and try again.');
         return withUrl('Request failed (HTTP $code). Please try again.');
       case DioExceptionType.cancel:
-        return null; // silent
+        return null;
       case DioExceptionType.unknown:
       default:
         return withUrl('Something went wrong. Please try again.');

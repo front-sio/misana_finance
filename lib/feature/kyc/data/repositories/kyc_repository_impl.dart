@@ -1,4 +1,4 @@
-import 'package:misana_finance_app/feature/kyc/domain/kyc_repository.dart';
+import '../../domain/kyc_repository.dart';
 import '../datasources/kyc_remote_data_source.dart';
 
 class KycRepositoryImpl implements KycRepository {
@@ -6,13 +6,18 @@ class KycRepositoryImpl implements KycRepository {
   KycRepositoryImpl(this.remote);
 
   @override
-  Future<List<Map<String, dynamic>>> getStatus(String accountId) {
-    return remote.getStatus(accountId);
+  Future<List<Map<String, dynamic>>> getStatusByUser(String userId) {
+    return remote.getStatusByUser(userId);
   }
 
   @override
-  Future<Map<String, dynamic>> submit({
-    required String accountId,
+  Future<Map<String, dynamic>> checkVerifiedByUser(String userId) {
+    return remote.checkVerifiedByUser(userId);
+  }
+
+  @override
+  Future<Map<String, dynamic>> submitByUser({
+    required String userId,
     required String documentType,
     required String documentNumber,
     required String fullName,
@@ -20,8 +25,8 @@ class KycRepositoryImpl implements KycRepository {
     String? address,
     String? documentImageBase64,
   }) {
-    return remote.submit(
-      accountId: accountId,
+    return remote.submitByUser(
+      userId: userId,
       documentType: documentType,
       documentNumber: documentNumber,
       fullName: fullName,
@@ -29,10 +34,5 @@ class KycRepositoryImpl implements KycRepository {
       address: address,
       documentImageBase64: documentImageBase64,
     );
-  }
-
-  @override
-  Future<Map<String, dynamic>> checkVerified(String accountId) {
-    return remote.checkVerified(accountId);
-  }
+    }
 }

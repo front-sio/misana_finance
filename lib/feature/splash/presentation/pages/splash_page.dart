@@ -17,18 +17,18 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-
-    // Kick off session check exactly once when Splash shows
-    scheduleMicrotask(() {
+    // Kick off session check once
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<AuthCubit>().checkSession();
 
-      // Failsafe: if something hangs (e.g., network stall), bounce to login
+      // Fail-safe: re-run check instead of forcing /login to avoid false logouts on slow refresh
       _failSafeTimer = Timer(const Duration(seconds: 12), () {
         if (!mounted) return;
         final s = context.read<AuthCubit>().state;
         if (s.checking) {
-          _go('/login');
+          // retry check instead of navigating
+          context.read<AuthCubit>().checkSession();
         }
       });
     });
@@ -56,7 +56,6 @@ class _SplashPageState extends State<SplashPage> {
             prev.checking != curr.checking ||
             prev.authenticated != curr.authenticated,
         listener: (context, state) {
-          // Decide where to go as soon as we have a result
           if (!state.checking) {
             if (state.authenticated) {
               _go('/home');
@@ -69,8 +68,14 @@ class _SplashPageState extends State<SplashPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Brand mark or logo placeholder
-              Icon(Icons.savings_rounded, size: 64, color: cs.primary),
+              Image.asset(
+                'assets/images/misana_orange.png',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: cs.primary.withOpacity(0.08),
+                  child: Icon(Icons.savings_outlined, size: 40, color: cs.primary),
+                ),
+              ),
               const SizedBox(height: 24),
               SizedBox(
                 width: 28,
