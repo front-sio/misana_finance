@@ -3,33 +3,54 @@ name: Build iOS App (Flutter)
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:  # allows manual trigger from GitHub
+  workflow_dispatch:  # allows manual trigger
 
 jobs:
-  build:
+  build-ios:
     runs-on: macos-latest
 
     steps:
+      # 1️⃣ Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Flutter SDK
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.6'  # weka version unayotumia
+          flutter-version: '3.35.6' # Flutter with Dart 3.9.2
 
-      - name: Get dependencies
+      # 3️⃣ Cache Flutter dependencies for faster builds
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      # 4️⃣ Get dependencies
+      - name: Get Flutter dependencies
         run: flutter pub get
 
+      # 5️⃣ Build iOS app (no signing)
       - name: Build iOS (no signing)
         run: flutter build ios --no-codesign
 
-      - name: Archive .ipa file
+      # 6️⃣ Archive Runner.app
+      - name: Archive .app
         run: |
           mkdir -p build-artifacts
-          cd build/ios/iphoneos
-          zip -r ../../../../build-artifacts/ios_app.zip Runner.app
+          APP_PATH="build/ios/iphoneos/Runner.app"
+          if [ -d "$APP_PATH" ]; then
+            zip -r build-artifacts/ios_app.zip "$APP_PATH"
+          else
+            echo "Error: $APP_PATH does not exist."
+            exit 1
+          fi
 
+      # 7️⃣ Upload build artifact
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
