@@ -64,7 +64,7 @@ import 'feature/payments/presentation/pages/deposit_page.dart';
 import 'feature/payments/presentation/pages/transactions_page.dart';
 
 // Onboarding screen (use package import so analyzer finds it reliably)
-import 'package:misana_finance_app/screens/onboarding_screen.dart' as onboarding;
+import 'package:misana_finance_app/feature/onboarding/presentation/pages/onboarding_page.dart' as onboarding;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -169,7 +169,7 @@ class MisanaApp extends StatelessWidget {
           ],
           initialRoute: initialRoute,
           routes: {
-            '/onboarding': (_) => const onboarding.OnboardingScreen(),
+            '/onboarding': (_) => const onboarding.OnboardingPage(),
             '/splash': (_) => const SplashPage(),
             '/login': (_) => const LoginPage(),
             '/register': (_) => const RegisterPage(),
