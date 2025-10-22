@@ -1,0 +1,37 @@
+name: Build iOS App (Flutter)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # allows manual trigger from GitHub
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'  # weka version unayotumia
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build iOS (no signing)
+        run: flutter build ios --no-codesign
+
+      - name: Archive .ipa file
+        run: |
+          mkdir -p build-artifacts
+          cd build/ios/iphoneos
+          zip -r ../../../../build-artifacts/ios_app.zip Runner.app
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios_app
+          path: build-artifacts/ios_app.zip
