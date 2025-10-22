@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:misana_finance_app/core/ui/app_messanger.dart';
 import 'package:misana_finance_app/feature/home/presentation/bloc/home_bloc.dart';
 import 'package:misana_finance_app/feature/kyc/data/repositories/kyc_repository_impl.dart';
 import 'package:misana_finance_app/feature/splash/presentation/pages/splash_page.dart';
-import 'core/i18n/app_locales.dart';
-import 'core/i18n/locale_cubit.dart';
-import 'core/navigation/nav.dart';
-import 'core/network/api_client.dart';
-import 'core/storage/token_storage.dart';
-import 'core/theme/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'package:misana_finance_app/core/ui/app_messanger.dart';
+import 'package:misana_finance_app/core/i18n/app_locales.dart';
+import 'package:misana_finance_app/core/i18n/locale_cubit.dart';
+import 'package:misana_finance_app/core/navigation/nav.dart';
+import 'package:misana_finance_app/core/network/api_client.dart';
+import 'package:misana_finance_app/core/storage/token_storage.dart';
+import 'package:misana_finance_app/core/theme/app_theme.dart';
 
 // Auth + Session
 import 'feature/session/auth_cubit.dart';
@@ -61,13 +63,23 @@ import 'feature/payments/domain/payments_repository.dart';
 import 'feature/payments/presentation/pages/deposit_page.dart';
 import 'feature/payments/presentation/pages/transactions_page.dart';
 
-void main() {
+// Onboarding screen (use package import so analyzer finds it reliably)
+import 'package:misana_finance_app/feature/onboarding/presentation/pages/onboarding_page.dart' as onboarding;
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // initialize locales
   AppLocales.bootstrap(
     locale: 'en_US',
     currency: 'TZS',
     symbol: 'TSh',
     decimalDigits: 0,
   );
+
+  // Read onboarding flag
+  final prefs = await SharedPreferences.getInstance();
+  final seenOnboarding = prefs.getBool('seenOnboarding') ?? false;
 
   final baseUrl = const String.fromEnvironment(
     'API_BASE_URL',
@@ -125,14 +137,15 @@ void main() {
             ),
           ),
         ],
-        child: const MisanaApp(),
+        child: MisanaApp(initialRoute: seenOnboarding ? '/splash' : '/onboarding'),
       ),
     ),
   );
 }
 
 class MisanaApp extends StatelessWidget {
-  const MisanaApp({super.key});
+  final String initialRoute;
+  const MisanaApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -149,13 +162,14 @@ class MisanaApp extends StatelessWidget {
             Locale('sw', 'TZ'),
             Locale('en', 'US'),
           ],
-          localizationsDelegates: const [
+          localizationsDelegates: [
             GlobalMaterialLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
           ],
-          initialRoute: '/splash',
+          initialRoute: initialRoute,
           routes: {
+            '/onboarding': (_) => const onboarding.OnboardingPage(),
             '/splash': (_) => const SplashPage(),
             '/login': (_) => const LoginPage(),
             '/register': (_) => const RegisterPage(),
