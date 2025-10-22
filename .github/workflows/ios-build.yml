@@ -16,7 +16,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'  # weka version unayotumia
+          flutter-version: 'stable'  # weka version unayotumia
 
       - name: Get dependencies
         run: flutter pub get
