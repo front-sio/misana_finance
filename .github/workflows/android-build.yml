@@ -35,13 +35,21 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Setup Flutter
+      - name: Setup Flutter (Dart ≥ 3.9)
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.3'
+          flutter-version: '3.35.6'
           channel: 'stable'
 
-      - name: Cache Flutter dependencies
+      - name: Disable Flutter analytics (CI noise)
+        run: flutter config --no-analytics
+
+      - name: Show Flutter/Dart versions
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Cache Flutter and Gradle deps
         uses: actions/cache@v4
         with:
           path: |
@@ -153,23 +161,15 @@ jobs:
             **API:** https://misana.stebofarm.co.tz
             
             ### 📱 Download for Android
-            
-            Choose the APK that matches your device:
-            - **arm64** - Most modern Android devices (recommended)
-            - **arm32** - Older Android devices  
-            - **x64** - Android emulators and some tablets
-            - **universal** - Works on all devices (larger file size)
+            Download the APK that matches your device from the assets below.
             
             ### 📋 Installation Instructions
-            
             1. Download the appropriate APK file
             2. On your Android device, go to Settings → Security → Enable "Unknown Sources"
             3. Open the downloaded APK file and tap "Install"
             4. Launch "Misana Finance" from your app drawer
             
             ### 🧪 Testing Instructions
-            
-            Please test the following core features:
             - [ ] App launch and splash screen
             - [ ] User registration and login
             - [ ] KYC verification process
@@ -180,7 +180,6 @@ jobs:
             - [ ] Android-specific features
             
             ### 🌐 API Information
-            
             This build connects to: **https://misana.stebofarm.co.tz**
             
             **Report Android issues:** [Create an issue](https://github.com/${{ github.repository }}/issues/new?labels=Android)
@@ -207,7 +206,7 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### 📥 Download Links" >> $GITHUB_STEP_SUMMARY
             echo "- [🤖 **Download Android APKs**](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
-            echo "- [📱 **Android Testing Portal**](https://front-sio.github.io/misana_finance)" >> $GITHUB_STEP_SUMMARY
+            echo "- [📱 **Android/iOS Testing Portal**](https://front-sio.github.io/misana_finance)" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### 🚀 Quick Install" >> $GITHUB_STEP_SUMMARY
             echo "1. Click download link above" >> $GITHUB_STEP_SUMMARY
