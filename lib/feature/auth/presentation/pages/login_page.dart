@@ -89,7 +89,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       'swahili': 'Kiswahili',
       'english': 'Kiingereza',
       // Friendly error messages
-      'network_error': 'Hujunganishwa. Tafadhali angalia intaneti kisha jaribu tena.',
+      'network_error': 'Hujaunganishwa. Tafadhali angalia intaneti kisha jaribu tena.',
       'bad_credentials': 'Taarifa za kuingia si sahihi. Tafadhali jaribu tena.',
       'server_error': 'Hitilafu ya mfumo. Tafadhali jaribu tena baadaye.',
       'unknown_error': 'Hitilafu imetokea. Tafadhali jaribu tena.',
@@ -302,16 +302,16 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(height: 14),
-                                      Text(
-                                        _t('title'),
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: wide ? 28 : 24,
-                                          fontWeight: FontWeight.w800,
-                                          color: scheme.onSurface,
-                                        ),
-                                      ),
+                                      // const SizedBox(height: 14),
+                                      // Text(
+                                      //   _t('title'),
+                                      //   textAlign: TextAlign.center,
+                                      //   style: TextStyle(
+                                      //     fontSize: wide ? 28 : 24,
+                                      //     fontWeight: FontWeight.w800,
+                                      //     color: scheme.onSurface,
+                                      //   ),
+                                      // ),
                                       const SizedBox(height: 6),
                                       Text(
                                         _t('subtitle'),

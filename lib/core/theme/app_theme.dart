@@ -15,6 +15,16 @@ class BrandPalette {
   static const Color gray300 = Color(0xFFE3E3E3);
 }
 
+
+
+class BrandColors {
+  static const purple = Color(0xFF9E27B4);
+  static const orange = Color(0xFFED702E);
+  static const white = Color(0xFFFFFFFF);
+  static const black = Color(0xFF111111);
+  static const gray600 = Color(0xFF5F5F5F);
+  static const gray300 = Color(0xFFE3E3E3);
+}
 /// App-wide brand extensions (e.g., gradients)
 @immutable
 class BrandTheme extends ThemeExtension<BrandTheme> {

@@ -1,0 +1,250 @@
+name: Build Android App (Flutter)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+        - debug
+        - release
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.6'
+          channel: 'stable'
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-${{ hashFiles('**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Generate native splash screens
+        run: flutter pub run flutter_native_splash:create
+
+      - name: Run Flutter analyzer
+        run: flutter analyze
+
+      - name: Run Flutter tests
+        run: flutter test --coverage
+
+      - name: Build Android APK (Debug)
+        if: github.event.inputs.release_type == 'debug' || github.event.inputs.release_type == ''
+        run: |
+          flutter build apk --debug --split-per-abi --build-name=1.0.0 --build-number=${{ github.run_number }}
+          flutter build apk --debug --build-name=1.0.0 --build-number=${{ github.run_number }}
+
+      - name: Build Android APK (Release)
+        if: github.event.inputs.release_type == 'release'
+        run: |
+          flutter build apk --release --split-per-abi --build-name=1.0.0 --build-number=${{ github.run_number }}
+          flutter build apk --release --build-name=1.0.0 --build-number=${{ github.run_number }}
+
+      - name: Get app version
+        id: version
+        run: |
+          VERSION=$(flutter --version | head -n 1 | cut -d ' ' -f 2)
+          APP_VERSION=$(grep 'version:' pubspec.yaml | cut -d ' ' -f 2 | cut -d '+' -f 1)
+          echo "flutter_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+
+      - name: Prepare build artifacts
+        run: |
+          mkdir -p build-artifacts
+          BUILD_TYPE="${{ github.event.inputs.release_type || 'debug' }}"
+          
+          if [ "$BUILD_TYPE" = "release" ]; then
+            cp build/app/outputs/flutter-apk/app-release.apk build-artifacts/misana-finance-universal-release.apk
+            cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build-artifacts/misana-finance-arm64-release.apk || true
+            cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk build-artifacts/misana-finance-arm32-release.apk || true
+            cp build/app/outputs/flutter-apk/app-x86_64-release.apk build-artifacts/misana-finance-x64-release.apk || true
+          else
+            cp build/app/outputs/flutter-apk/app-debug.apk build-artifacts/misana-finance-universal-debug.apk
+            cp build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk build-artifacts/misana-finance-arm64-debug.apk || true
+            cp build/app/outputs/flutter-apk/app-armeabi-v7a-debug.apk build-artifacts/misana-finance-arm32-debug.apk || true
+            cp build/app/outputs/flutter-apk/app-x86_64-debug.apk build-artifacts/misana-finance-x64-debug.apk || true
+          fi
+          
+          cat > build-artifacts/build-info.txt << EOF
+          Build Information
+          =================
+          App Version: ${{ steps.version.outputs.app_version }}
+          Build Number: ${{ steps.version.outputs.build_number }}
+          Flutter Version: ${{ steps.version.outputs.flutter_version }}
+          Build Type: $BUILD_TYPE
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+          Build Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          API Endpoint: https://misana.stebofarm.co.tz
+          
+          Installation Instructions:
+          1. Download the APK file to your Android device
+          2. Enable "Install from Unknown Sources" in your device settings
+          3. Open the downloaded APK file to install
+          4. Launch "Misana Finance" from your app drawer
+          
+          Recommended APK for most devices: misana-finance-arm64-$BUILD_TYPE.apk
+          
+          Testing Checklist:
+          - [ ] App launch and splash screen
+          - [ ] User registration and login
+          - [ ] KYC verification process
+          - [ ] Dashboard navigation
+          - [ ] Account management
+          - [ ] Financial operations
+          - [ ] Network connectivity with API
+          EOF
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: misana-finance-android-${{ github.event.inputs.release_type || 'debug' }}-build-${{ github.run_number }}
+          path: build-artifacts/
+          retention-days: 30
+
+      - name: Create Release (if release build)
+        if: github.event.inputs.release_type == 'release' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.app_version }}-build${{ github.run_number }}
+          name: Misana Finance v${{ steps.version.outputs.app_version }} (Build ${{ github.run_number }})
+          body: |
+            ## 🚀 Misana Finance Release
+            
+            **Version:** ${{ steps.version.outputs.app_version }}  
+            **Build:** ${{ github.run_number }}  
+            **Branch:** ${{ github.ref_name }}  
+            **Commit:** ${{ github.sha }}  
+            **API:** https://misana.stebofarm.co.tz
+            
+            ### 📱 Download for Android
+            
+            Choose the APK that matches your device:
+            - **arm64** - Most modern Android devices (recommended)
+            - **arm32** - Older Android devices  
+            - **x64** - Android emulators and some tablets
+            - **universal** - Works on all devices (larger file size)
+            
+            ### 📋 Installation Instructions
+            
+            1. Download the appropriate APK file
+            2. On your Android device, go to Settings → Security → Enable "Unknown Sources"
+            3. Open the downloaded APK file and tap "Install"
+            4. Launch "Misana Finance" from your app drawer
+            
+            ### 🧪 Testing Instructions
+            
+            Please test the following core features:
+            - [ ] App launch and splash screen
+            - [ ] User registration and login
+            - [ ] KYC verification process
+            - [ ] Dashboard navigation
+            - [ ] Account management
+            - [ ] Financial operations
+            - [ ] Network connectivity with API
+            
+            ### 🌐 API Information
+            
+            This build connects to: **https://misana.stebofarm.co.tz**
+            
+            **Report bugs:** [Create an issue](https://github.com/${{ github.repository }}/issues/new)
+          files: |
+            build-artifacts/*.apk
+            build-artifacts/build-info.txt
+          draft: false
+          prerelease: ${{ github.ref != 'refs/heads/main' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify-testers:
+    runs-on: ubuntu-latest
+    needs: build-android
+    if: always() && (needs.build-android.result == 'success')
+    
+    steps:
+      - name: Create test notification
+        run: |
+          cat > test-notification.md << EOF
+          # 🧪 New Misana Finance Build Available for Testing
+          
+          ## Build Details
+          - **Version:** ${{ needs.build-android.outputs.app_version || '1.0.0' }}
+          - **Build Number:** ${{ github.run_number }}
+          - **Build Type:** ${{ github.event.inputs.release_type || 'debug' }}
+          - **Branch:** ${{ github.ref_name }}
+          - **Commit:** [\`${GITHUB_SHA:0:8}\`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+          - **API Endpoint:** https://misana.stebofarm.co.tz
+          
+          ## 📥 Download Links
+          
+          [**🔥 Download Latest Build**](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          
+          ### Quick Install Guide
+          1. Click the download link above
+          2. Download \`misana-finance-arm64-${{ github.event.inputs.release_type || 'debug' }}.apk\`
+          3. Install on your Android device
+          4. Test core functionality and report issues
+          
+          ### Testing Focus Areas
+          - ✅ Splash screen and app initialization
+          - ✅ User authentication flow
+          - ✅ API connectivity to https://misana.stebofarm.co.tz
+          - ✅ Core financial features
+          - ✅ UI responsiveness across devices
+          
+          ## 🔗 Useful Links
+          - [📱 Download APKs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - [🐛 Report Issues](https://github.com/${{ github.repository }}/issues)
+          - [💬 Discussions](https://github.com/${{ github.repository }}/discussions)
+          - [📝 Source Code](https://github.com/${{ github.repository }})
+          
+          ---
+          *Automated build from latest code changes - Ready for testing!*
+          EOF
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const notification = fs.readFileSync('test-notification.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: notification
+            });

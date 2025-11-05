@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:misana_finance_app/feature/home/presentation/bloc/home_bloc.dart';
 import 'package:misana_finance_app/feature/kyc/data/repositories/kyc_repository_impl.dart';
 import 'package:misana_finance_app/feature/splash/presentation/pages/splash_page.dart';
@@ -14,7 +16,6 @@ import 'package:misana_finance_app/core/network/api_client.dart';
 import 'package:misana_finance_app/core/storage/token_storage.dart';
 import 'package:misana_finance_app/core/theme/app_theme.dart';
 
-// Auth + Session
 import 'feature/session/auth_cubit.dart';
 import 'feature/auth/data/datasources/auth_remote_data_source.dart';
 import 'feature/auth/data/repositories/auth_repository_impl.dart';
@@ -26,27 +27,22 @@ import 'feature/auth/presentation/pages/login_page.dart';
 import 'feature/auth/presentation/pages/register_page.dart';
 import 'feature/auth/presentation/pages/verify_account_page.dart';
 
-// Home UI (aliased)
 import 'feature/home/presentation/pages/home_page.dart' as home_ui;
 
-// Home domain
 import 'feature/home/data/datasources/home_remote_data_source.dart';
 import 'feature/home/data/repositories/home_repository_impl.dart';
 import 'feature/home/domain/home_repository.dart';
 
-// KYC (now userId-based)
 import 'feature/kyc/data/datasources/kyc_remote_data_source.dart';
 import 'feature/kyc/domain/kyc_repository.dart';
 import 'feature/kyc/presentation/bloc/kyc_bloc.dart';
 import 'feature/kyc/presentation/bloc/kyc_event.dart';
 import 'feature/kyc/presentation/pages/kyc_verification_page.dart';
 
-// Savings (legacy)
 import 'feature/savings/data/datasources/savings_remote_data_source.dart';
 import 'feature/savings/data/repositories/savings_repository_impl.dart';
 import 'feature/savings/domain/savings_repository.dart';
 
-// New: Account + Pots + Payments
 import 'feature/account/data/datasources/account_remote_data_source.dart';
 import 'feature/account/data/repositories/account_repository_impl.dart';
 import 'feature/account/domain/account_repository.dart';
@@ -63,13 +59,27 @@ import 'feature/payments/domain/payments_repository.dart';
 import 'feature/payments/presentation/pages/deposit_page.dart';
 import 'feature/payments/presentation/pages/transactions_page.dart';
 
-// Onboarding screen (use package import so analyzer finds it reliably)
 import 'package:misana_finance_app/feature/onboarding/presentation/pages/onboarding_page.dart' as onboarding;
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  // initialize locales
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   AppLocales.bootstrap(
     locale: 'en_US',
     currency: 'TZS',
@@ -77,41 +87,33 @@ Future<void> main() async {
     decimalDigits: 0,
   );
 
-  // Read onboarding flag
   final prefs = await SharedPreferences.getInstance();
   final seenOnboarding = prefs.getBool('seenOnboarding') ?? false;
 
   final baseUrl = const String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:8080',
+    defaultValue: 'https://misana.stebofarm.co.tz',
   );
 
   final tokenStorage = TokenStorage();
   final apiClient = ApiClient(baseUrl: baseUrl, tokenStorage: tokenStorage);
 
-  // Auth
   final authRemote = AuthRemoteDataSource(apiClient);
   final AuthRepository authRepo = AuthRepositoryImpl(authRemote, storage: tokenStorage);
 
-  // Home
   final homeRemote = HomeRemoteDataSource(apiClient);
   final HomeRepository homeRepo = HomeRepositoryImpl(homeRemote);
 
-  // KYC (userId-based repo)
   final kycRemote = KycRemoteDataSource(apiClient);
   final KycRepository kycRepo = KycRepositoryImpl(kycRemote);
 
-  // Savings (legacy)
   final savingsRemote = SavingsRemoteDataSource(apiClient);
   final SavingsRepository savingsRepo = SavingsRepositoryImpl(savingsRemote);
 
-  // Account
   final AccountRepository accountRepo = AccountRepositoryImpl(AccountRemoteDataSource(apiClient));
 
-  // Pots
   final PotsRepository potsRepo = PotsRepositoryImpl(PotsRemoteDataSource(apiClient));
 
-  // Payments
   final PaymentsRepository paymentsRepo = PaymentsRepositoryImpl(PaymentsRemoteDataSource(apiClient));
 
   runApp(
@@ -162,7 +164,7 @@ class MisanaApp extends StatelessWidget {
             Locale('sw', 'TZ'),
             Locale('en', 'US'),
           ],
-          localizationsDelegates: [
+          localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
@@ -175,16 +177,12 @@ class MisanaApp extends StatelessWidget {
             '/register': (_) => const RegisterPage(),
             '/verify': (_) => const VerifyAccountPage(usernameOrEmail: ''),
             '/home': (_) => const home_ui.HomePage(),
-
-            // KYC (userId-based)
             '/kyc': (routeCtx) {
               return BlocProvider(
                 create: (_) => KycBloc(RepositoryProvider.of<KycRepository>(routeCtx)),
                 child: const KycVerificationPage(),
               );
             },
-
-            // Pots & Payments
             '/pots': (routeCtx) => PotsListPage(repo: RepositoryProvider.of<PotsRepository>(routeCtx)),
             '/pots/new': (routeCtx) => PotCreatePage(repo: RepositoryProvider.of<PotsRepository>(routeCtx)),
             '/deposit': (routeCtx) => DepositPage(
@@ -193,6 +191,10 @@ class MisanaApp extends StatelessWidget {
                 ),
             '/transactions': (routeCtx) =>
                 TransactionsPage(repo: RepositoryProvider.of<PaymentsRepository>(routeCtx)),
+          },
+          builder: (context, child) {
+            FlutterNativeSplash.remove();
+            return child!;
           },
         );
       },
