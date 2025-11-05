@@ -1,8 +1,8 @@
-name: Deploy Test Distribution Portal
+name: Deploy Testing Portal
 
 on:
   workflow_run:
-    workflows: ["Build Android App (Flutter)"]
+    workflows: ["Build Android App (Flutter)", "Build iOS App (Flutter)"]
     types:
       - completed
   workflow_dispatch:
@@ -32,7 +32,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Generate distribution portal
+      - name: Generate unified testing portal
         run: |
           mkdir -p dist
           
@@ -42,326 +42,271 @@ jobs:
           <head>
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Misana Finance - Beta Testing</title>
+              <title>Misana Finance - Download Center</title>
               <script src="https://cdn.tailwindcss.com"></script>
               <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
               <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
               <style>
                   .gradient-bg { background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); }
                   .card-hover { transition: all 0.3s ease; }
-                  .card-hover:hover { transform: translateY(-2px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
-                  .pulse-glow { animation: pulse-glow 2s ease-in-out infinite alternate; }
-                  @keyframes pulse-glow { from { box-shadow: 0 0 20px rgba(255, 107, 53, 0.4); } to { box-shadow: 0 0 30px rgba(255, 107, 53, 0.8); } }
+                  .card-hover:hover { transform: translateY(-2px); box-shadow: 0 25px 50px rgba(0,0,0,0.15); }
+                  .pulse-glow { animation: pulse-glow 3s ease-in-out infinite alternate; }
+                  @keyframes pulse-glow { 
+                      from { box-shadow: 0 0 20px rgba(255, 107, 53, 0.4); } 
+                      to { box-shadow: 0 0 35px rgba(255, 107, 53, 0.8); } 
+                  }
+                  .platform-card { 
+                      background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+                      border: 2px solid transparent;
+                      transition: all 0.4s ease;
+                  }
+                  .platform-card:hover {
+                      border-color: #ff6b35;
+                      transform: translateY(-4px) scale(1.02);
+                  }
+                  .download-btn {
+                      background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+                      transition: all 0.3s ease;
+                  }
+                  .download-btn:hover {
+                      background: linear-gradient(135deg, #f7931e 0%, #ff6b35 100%);
+                      transform: scale(1.05);
+                  }
               </style>
           </head>
           <body class="bg-gray-50 min-h-screen">
-              <div class="gradient-bg text-white">
-                  <div class="container mx-auto px-4 py-16 text-center">
-                      <div class="inline-flex items-center justify-center w-24 h-24 bg-white bg-opacity-20 rounded-full mb-6 pulse-glow">
-                          <i class="fas fa-mobile-alt text-4xl"></i>
-                      </div>
-                      <h1 class="text-5xl md:text-6xl font-bold mb-4">Misana Finance</h1>
-                      <p class="text-xl md:text-2xl text-orange-100 mb-2">Beta Testing Portal</p>
-                      <p class="text-orange-200 max-w-3xl mx-auto text-lg">Download the latest builds and help us perfect the future of financial services in Tanzania</p>
-                  </div>
-              </div>
-
-              <div class="container mx-auto px-4 py-16">
-                  <div class="max-w-7xl mx-auto">
-                      <div class="grid lg:grid-cols-3 gap-8">
-                          <div class="lg:col-span-2">
-                              <div class="bg-white rounded-3xl shadow-xl p-8 card-hover mb-8">
-                                  <div class="flex items-center justify-between mb-8">
-                                      <h2 class="text-3xl font-bold text-gray-800 flex items-center">
-                                          <i class="fas fa-rocket text-orange-500 mr-4 text-2xl"></i>
-                                          Latest Build
-                                      </h2>
-                                      <div class="flex items-center space-x-3">
-                                          <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-bold flex items-center">
-                                              <i class="fas fa-check-circle mr-2"></i>Ready
-                                          </span>
-                                          <span class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-bold">
-                                              v1.0.0
-                                          </span>
-                                      </div>
-                                  </div>
-                                  
-                                  <div class="grid md:grid-cols-2 gap-8 mb-8">
-                                      <div>
-                                          <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                                              <i class="fas fa-info-circle text-blue-500 mr-3"></i>
-                                              Build Information
-                                          </h3>
-                                          <div class="space-y-3">
-                                              <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                                  <span class="text-gray-600 font-medium">Platform:</span>
-                                                  <span class="font-bold text-gray-800">Android</span>
-                                              </div>
-                                              <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                                  <span class="text-gray-600 font-medium">Type:</span>
-                                                  <span class="font-bold text-gray-800">Debug Build</span>
-                                              </div>
-                                              <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                                  <span class="text-gray-600 font-medium">API:</span>
-                                                  <span class="font-bold text-blue-600 text-sm">misana.stebofarm.co.tz</span>
-                                              </div>
-                                              <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                                  <span class="text-gray-600 font-medium">Updated:</span>
-                                                  <span class="font-bold text-gray-800" id="last-updated">Loading...</span>
-                                              </div>
-                                          </div>
-                                      </div>
-                                      
-                                      <div>
-                                          <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                                              <i class="fas fa-download text-green-500 mr-3"></i>
-                                              Download Options
-                                          </h3>
-                                          <div class="space-y-4">
-                                              <button onclick="downloadLatest('arm64')" 
-                                                     class="w-full flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-4 rounded-2xl transition-all duration-300 group shadow-lg hover:shadow-xl">
-                                                  <span class="flex items-center font-bold text-lg">
-                                                      <i class="fas fa-mobile-alt mr-3"></i>
-                                                      ARM64 (Recommended)
-                                                  </span>
-                                                  <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform text-xl"></i>
-                                              </button>
-                                              <button onclick="downloadLatest('universal')"
-                                                     class="w-full flex items-center justify-between bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-6 py-4 rounded-2xl transition-all duration-300 group shadow-lg hover:shadow-xl">
-                                                  <span class="flex items-center font-bold text-lg">
-                                                      <i class="fas fa-download mr-3"></i>
-                                                      Universal APK
-                                                  </span>
-                                                  <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform text-xl"></i>
-                                              </button>
-                                          </div>
-                                      </div>
-                                  </div>
-
-                                  <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-8">
-                                      <h4 class="text-xl font-bold text-blue-800 mb-6 flex items-center">
-                                          <i class="fas fa-lightbulb mr-3 text-2xl"></i>
-                                          Installation Guide
-                                      </h4>
-                                      <div class="grid md:grid-cols-2 gap-6">
-                                          <div class="space-y-4">
-                                              <div class="flex items-start">
-                                                  <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4 mt-1 flex-shrink-0">1</div>
-                                                  <p class="text-blue-700 font-medium">Download APK to your Android device</p>
-                                              </div>
-                                              <div class="flex items-start">
-                                                  <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4 mt-1 flex-shrink-0">2</div>
-                                                  <p class="text-blue-700 font-medium">Enable "Install from Unknown Sources" in Settings</p>
-                                              </div>
-                                          </div>
-                                          <div class="space-y-4">
-                                              <div class="flex items-start">
-                                                  <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4 mt-1 flex-shrink-0">3</div>
-                                                  <p class="text-blue-700 font-medium">Open downloaded APK and tap "Install"</p>
-                                              </div>
-                                              <div class="flex items-start">
-                                                  <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4 mt-1 flex-shrink-0">4</div>
-                                                  <p class="text-blue-700 font-medium">Launch "Misana Finance" from app drawer</p>
-                                              </div>
-                                          </div>
-                                      </div>
-                                  </div>
-                              </div>
-
-                              <div class="bg-white rounded-3xl shadow-xl p-8 card-hover">
-                                  <h2 class="text-3xl font-bold text-gray-800 mb-6 flex items-center">
-                                      <i class="fas fa-history text-purple-500 mr-4 text-2xl"></i>
-                                      Build History
-                                  </h2>
-                                  <div id="builds-list" class="space-y-4">
-                                      <div class="text-center text-gray-500 py-12">
-                                          <i class="fas fa-spinner fa-spin text-3xl mb-4"></i>
-                                          <p class="text-lg">Loading build history...</p>
-                                      </div>
-                                  </div>
-                              </div>
+              <div class="gradient-bg text-white relative overflow-hidden">
+                  <div class="absolute inset-0 bg-black bg-opacity-10"></div>
+                  <div class="container mx-auto px-4 py-20 relative z-10">
+                      <div class="text-center max-w-4xl mx-auto">
+                          <div class="inline-flex items-center justify-center w-28 h-28 bg-white bg-opacity-20 rounded-full mb-8 pulse-glow">
+                              <i class="fas fa-mobile-alt text-5xl"></i>
                           </div>
-
-                          <div class="space-y-8">
-                              <div class="bg-white rounded-3xl shadow-xl p-8 card-hover">
-                                  <h2 class="text-3xl font-bold text-gray-800 mb-6 flex items-center">
-                                      <i class="fas fa-clipboard-check text-orange-500 mr-4 text-2xl"></i>
-                                      Testing Guide
-                                  </h2>
-                                  <div class="space-y-4">
-                                      <div class="p-4 bg-orange-50 border border-orange-200 rounded-xl">
-                                          <h4 class="font-bold text-orange-800 mb-2">🎯 Priority Tests</h4>
-                                          <div class="space-y-2 text-sm">
-                                              <label class="flex items-center cursor-pointer hover:bg-orange-100 p-2 rounded-lg transition-colors">
-                                                  <input type="checkbox" class="mr-3 text-orange-500 rounded">
-                                                  <span class="text-orange-700">App launch & splash screen</span>
-                                              </label>
-                                              <label class="flex items-center cursor-pointer hover:bg-orange-100 p-2 rounded-lg transition-colors">
-                                                  <input type="checkbox" class="mr-3 text-orange-500 rounded">
-                                                  <span class="text-orange-700">User authentication flow</span>
-                                              </label>
-                                              <label class="flex items-center cursor-pointer hover:bg-orange-100 p-2 rounded-lg transition-colors">
-                                                  <input type="checkbox" class="mr-3 text-orange-500 rounded">
-                                                  <span class="text-orange-700">API connectivity test</span>
-                                              </label>
-                                          </div>
-                                      </div>
-                                      
-                                      <div class="p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                                          <h4 class="font-bold text-blue-800 mb-2">🔧 Feature Tests</h4>
-                                          <div class="space-y-2 text-sm">
-                                              <label class="flex items-center cursor-pointer hover:bg-blue-100 p-2 rounded-lg transition-colors">
-                                                  <input type="checkbox" class="mr-3 text-blue-500 rounded">
-                                                  <span class="text-blue-700">KYC verification process</span>
-                                              </label>
-                                              <label class="flex items-center cursor-pointer hover:bg-blue-100 p-2 rounded-lg transition-colors">
-                                                  <input type="checkbox" class="mr-3 text-blue-500 rounded">
-                                                  <span class="text-blue-700">Dashboard navigation</span>
-                                              </label>
-                                              <label class="flex items-center cursor-pointer hover:bg-blue-100 p-2 rounded-lg transition-colors">
-                                                  <input type="checkbox" class="mr-3 text-blue-500 rounded">
-                                                  <span class="text-blue-700">Financial operations</span>
-                                              </label>
-                                          </div>
-                                      </div>
-                                  </div>
+                          <h1 class="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">
+                              Misana Finance
+                          </h1>
+                          <p class="text-2xl md:text-3xl text-orange-100 mb-4 font-light">Download Center</p>
+                          <p class="text-xl text-orange-200 max-w-3xl mx-auto leading-relaxed">
+                              Get the latest release builds for Android and iOS. One link, instant download.
+                          </p>
+                          <div class="mt-8 flex justify-center space-x-6 text-orange-200">
+                              <div class="flex items-center">
+                                  <i class="fas fa-shield-alt mr-2"></i>
+                                  <span>Secure</span>
                               </div>
-
-                              <div class="bg-white rounded-3xl shadow-xl p-8 card-hover">
-                                  <h2 class="text-3xl font-bold text-gray-800 mb-6 flex items-center">
-                                      <i class="fas fa-comments text-green-500 mr-4 text-2xl"></i>
-                                      Feedback Hub
-                                  </h2>
-                                  <div class="space-y-4">
-                                      <a href="https://github.com/front-sio/misana_finance/issues/new" 
-                                         target="_blank"
-                                         class="flex items-center p-4 bg-red-50 hover:bg-red-100 rounded-2xl transition-all duration-300 group border-2 border-red-100 hover:border-red-200">
-                                          <i class="fas fa-bug text-red-500 text-2xl mr-4"></i>
-                                          <div>
-                                              <h3 class="font-bold text-gray-800 group-hover:text-red-700 text-lg">Report Bug</h3>
-                                              <p class="text-gray-600">Found an issue? Help us fix it!</p>
-                                          </div>
-                                          <i class="fas fa-external-link-alt ml-auto text-red-400 group-hover:text-red-600"></i>
-                                      </a>
-                                      <a href="https://github.com/front-sio/misana_finance/discussions" 
-                                         target="_blank"
-                                         class="flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-2xl transition-all duration-300 group border-2 border-blue-100 hover:border-blue-200">
-                                          <i class="fas fa-lightbulb text-blue-500 text-2xl mr-4"></i>
-                                          <div>
-                                              <h3 class="font-bold text-gray-800 group-hover:text-blue-700 text-lg">Suggestions</h3>
-                                              <p class="text-gray-600">Share ideas and feedback</p>
-                                          </div>
-                                          <i class="fas fa-external-link-alt ml-auto text-blue-400 group-hover:text-blue-600"></i>
-                                      </a>
-                                      <a href="mailto:support@misana.stebofarm.co.tz" 
-                                         class="flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-2xl transition-all duration-300 group border-2 border-green-100 hover:border-green-200">
-                                          <i class="fas fa-envelope text-green-500 text-2xl mr-4"></i>
-                                          <div>
-                                              <h3 class="font-bold text-gray-800 group-hover:text-green-700 text-lg">Direct Support</h3>
-                                              <p class="text-gray-600">Email us directly</p>
-                                          </div>
-                                          <i class="fas fa-arrow-right ml-auto text-green-400 group-hover:text-green-600"></i>
-                                      </a>
-                                  </div>
+                              <div class="flex items-center">
+                                  <i class="fas fa-bolt mr-2"></i>
+                                  <span>Fast</span>
                               </div>
-
-                              <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl shadow-xl p-8 text-white">
-                                  <h2 class="text-2xl font-bold mb-6 flex items-center">
-                                      <i class="fas fa-chart-line mr-3"></i>
-                                      Quick Stats
-                                  </h2>
-                                  <div class="grid grid-cols-2 gap-4">
-                                      <div class="text-center">
-                                          <div class="text-3xl font-bold" id="total-builds">-</div>
-                                          <div class="text-orange-100 text-sm">Total Builds</div>
-                                      </div>
-                                      <div class="text-center">
-                                          <div class="text-3xl font-bold">100%</div>
-                                          <div class="text-orange-100 text-sm">Success Rate</div>
-                                      </div>
-                                  </div>
+                              <div class="flex items-center">
+                                  <i class="fas fa-mobile-alt mr-2"></i>
+                                  <span>Cross-Platform</span>
                               </div>
                           </div>
                       </div>
                   </div>
               </div>
 
-              <footer class="bg-gray-900 text-gray-300 py-12">
+              <div class="container mx-auto px-4 py-16 -mt-12 relative z-20">
+                  <div class="max-w-6xl mx-auto">
+                      <div class="grid md:grid-cols-2 gap-8 mb-16">
+                          <div class="platform-card rounded-3xl shadow-2xl p-8 card-hover">
+                              <div class="text-center mb-8">
+                                  <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
+                                      <i class="fab fa-android text-4xl text-green-600"></i>
+                                  </div>
+                                  <h2 class="text-3xl font-bold text-gray-800 mb-3">Android Release</h2>
+                                  <p class="text-gray-600 text-lg">Ready-to-install APK files</p>
+                              </div>
+                              
+                              <div class="space-y-4 mb-8">
+                                  <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+                                      <span class="font-semibold text-gray-700">Version:</span>
+                                      <span class="text-gray-800 font-bold">1.0.0</span>
+                                  </div>
+                                  <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+                                      <span class="font-semibold text-gray-700">Type:</span>
+                                      <span class="text-green-600 font-bold">Release Build</span>
+                                  </div>
+                                  <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+                                      <span class="font-semibold text-gray-700">Size:</span>
+                                      <span class="text-gray-800 font-bold">~50MB</span>
+                                  </div>
+                              </div>
+
+                              <div class="space-y-3">
+                                  <button onclick="downloadAndroid('arm64')" 
+                                         class="w-full download-btn text-white px-6 py-4 rounded-2xl font-bold text-lg flex items-center justify-center shadow-lg">
+                                      <i class="fas fa-download mr-3"></i>
+                                      Download for Android
+                                  </button>
+                                  <p class="text-center text-sm text-gray-500">ARM64 (Recommended for most devices)</p>
+                              </div>
+                          </div>
+
+                          <div class="platform-card rounded-3xl shadow-2xl p-8 card-hover">
+                              <div class="text-center mb-8">
+                                  <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-6">
+                                      <i class="fab fa-apple text-4xl text-blue-600"></i>
+                                  </div>
+                                  <h2 class="text-3xl font-bold text-gray-800 mb-3">iOS Release</h2>
+                                  <p class="text-gray-600 text-lg">IPA file for iOS installation</p>
+                              </div>
+                              
+                              <div class="space-y-4 mb-8">
+                                  <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+                                      <span class="font-semibold text-gray-700">Version:</span>
+                                      <span class="text-gray-800 font-bold">1.0.0</span>
+                                  </div>
+                                  <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+                                      <span class="font-semibold text-gray-700">Type:</span>
+                                      <span class="text-blue-600 font-bold">Release Build</span>
+                                  </div>
+                                  <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+                                      <span class="font-semibold text-gray-700">Signing:</span>
+                                      <span class="text-orange-600 font-bold">Unsigned</span>
+                                  </div>
+                              </div>
+
+                              <div class="space-y-3">
+                                  <button onclick="downloadIOS()" 
+                                         class="w-full download-btn text-white px-6 py-4 rounded-2xl font-bold text-lg flex items-center justify-center shadow-lg">
+                                      <i class="fas fa-download mr-3"></i>
+                                      Download for iOS
+                                  </button>
+                                  <p class="text-center text-sm text-gray-500">Requires TestFlight or developer installation</p>
+                              </div>
+                          </div>
+                      </div>
+
+                      <div class="bg-white rounded-3xl shadow-2xl p-8 card-hover mb-12">
+                          <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center flex items-center justify-center">
+                              <i class="fas fa-rocket text-orange-500 mr-4"></i>
+                              Quick Installation Guide
+                          </h2>
+                          
+                          <div class="grid md:grid-cols-2 gap-8">
+                              <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border-2 border-green-200">
+                                  <h3 class="text-xl font-bold text-green-800 mb-4 flex items-center">
+                                      <i class="fab fa-android mr-3"></i>Android Installation
+                                  </h3>
+                                  <ol class="space-y-3 text-green-700">
+                                      <li class="flex items-start">
+                                          <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">1</span>
+                                          Download APK file to your device
+                                      </li>
+                                      <li class="flex items-start">
+                                          <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</span>
+                                          Enable "Install from Unknown Sources"
+                                      </li>
+                                      <li class="flex items-start">
+                                          <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</span>
+                                          Open APK and tap "Install"
+                                      </li>
+                                      <li class="flex items-start">
+                                          <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">4</span>
+                                          Launch app from drawer
+                                      </li>
+                                  </ol>
+                              </div>
+
+                              <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border-2 border-blue-200">
+                                  <h3 class="text-xl font-bold text-blue-800 mb-4 flex items-center">
+                                      <i class="fab fa-apple mr-3"></i>iOS Installation
+                                  </h3>
+                                  <ol class="space-y-3 text-blue-700">
+                                      <li class="flex items-start">
+                                          <span class="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">1</span>
+                                          Download IPA file
+                                      </li>
+                                      <li class="flex items-start">
+                                          <span class="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</span>
+                                          Use TestFlight or Xcode
+                                      </li>
+                                      <li class="flex items-start">
+                                          <span class="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</span>
+                                          Trust developer certificate
+                                      </li>
+                                      <li class="flex items-start">
+                                          <span class="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">4</span>
+                                          Launch from home screen
+                                      </li>
+                                  </ol>
+                              </div>
+                          </div>
+                      </div>
+
+                      <div class="grid md:grid-cols-3 gap-6">
+                          <a href="https://github.com/front-sio/misana_finance/issues/new" 
+                             target="_blank"
+                             class="bg-white rounded-2xl shadow-lg p-6 card-hover text-center border-2 border-transparent hover:border-red-200">
+                              <i class="fas fa-bug text-red-500 text-3xl mb-4"></i>
+                              <h3 class="font-bold text-gray-800 text-lg mb-2">Report Bug</h3>
+                              <p class="text-gray-600">Found an issue? Let us know!</p>
+                          </a>
+                          <a href="https://github.com/front-sio/misana_finance/discussions" 
+                             target="_blank"
+                             class="bg-white rounded-2xl shadow-lg p-6 card-hover text-center border-2 border-transparent hover:border-blue-200">
+                              <i class="fas fa-comments text-blue-500 text-3xl mb-4"></i>
+                              <h3 class="font-bold text-gray-800 text-lg mb-2">Feedback</h3>
+                              <p class="text-gray-600">Share your thoughts</p>
+                          </a>
+                          <a href="mailto:support@misana.stebofarm.co.tz" 
+                             class="bg-white rounded-2xl shadow-lg p-6 card-hover text-center border-2 border-transparent hover:border-green-200">
+                              <i class="fas fa-envelope text-green-500 text-3xl mb-4"></i>
+                              <h3 class="font-bold text-gray-800 text-lg mb-2">Support</h3>
+                              <p class="text-gray-600">Direct email support</p>
+                          </a>
+                      </div>
+                  </div>
+              </div>
+
+              <footer class="bg-gray-900 text-gray-300 py-12 mt-16">
                   <div class="container mx-auto px-4 text-center">
-                      <div class="mb-4">
-                          <h3 class="text-2xl font-bold text-white mb-2">Misana Finance</h3>
-                          <p class="text-gray-400">Your trusted financial partner in Tanzania</p>
+                      <div class="mb-6">
+                          <h3 class="text-3xl font-bold text-white mb-3">Misana Finance</h3>
+                          <p class="text-gray-400 text-lg">Your trusted financial partner in Tanzania</p>
                       </div>
-                      <div class="text-sm text-gray-500 space-y-1">
-                          <p>&copy; 2024 Misana Finance. All rights reserved.</p>
-                          <p>API Endpoint: <span class="text-orange-400 font-mono">https://misana.stebofarm.co.tz</span></p>
+                      <div class="text-gray-500 space-y-2">
+                          <p>&copy; 2025 Misana Finance. All rights reserved.</p>
+                          <p>API: <span class="text-orange-400 font-mono">https://misana.stebofarm.co.tz</span></p>
+                          <p>Last updated: <span id="last-updated">Loading...</span></p>
                       </div>
                   </div>
               </footer>
 
               <script>
                   document.getElementById('last-updated').textContent = new Date().toLocaleDateString('en-US', {
-                      year: 'numeric', month: 'short', day: 'numeric'
+                      year: 'numeric', month: 'long', day: 'numeric', 
+                      hour: '2-digit', minute: '2-digit'
                   });
 
-                  function downloadLatest(type) {
+                  function downloadAndroid(type = 'arm64') {
                       const repoUrl = 'https://github.com/front-sio/misana_finance';
                       const actionsUrl = `${repoUrl}/actions`;
                       window.open(actionsUrl, '_blank');
                       
                       if (typeof gtag === 'function') {
                           gtag('event', 'download_click', {
+                              'platform': 'android',
                               'build_type': type,
                               'timestamp': new Date().toISOString()
                           });
                       }
                   }
 
-                  async function loadBuildHistory() {
-                      try {
-                          const response = await fetch('https://api.github.com/repos/front-sio/misana_finance/actions/runs?event=push&status=success&per_page=6');
-                          const data = await response.json();
-                          
-                          const buildsList = document.getElementById('builds-list');
-                          buildsList.innerHTML = '';
-
-                          if (data.workflow_runs && data.workflow_runs.length > 0) {
-                              data.workflow_runs.forEach((run, index) => {
-                                  const buildItem = document.createElement('div');
-                                  buildItem.className = 'flex items-center justify-between p-6 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-all duration-300 border border-gray-200';
-                                  buildItem.innerHTML = `
-                                      <div class="flex items-center">
-                                          <div class="w-12 h-12 bg-gradient-to-r from-orange-400 to-orange-600 text-white rounded-full flex items-center justify-center font-bold text-lg mr-6 shadow-lg">
-                                              ${run.run_number}
-                                          </div>
-                                          <div>
-                                              <h4 class="font-bold text-gray-800 text-lg">Build #${run.run_number}</h4>
-                                              <p class="text-gray-600">${new Date(run.created_at).toLocaleDateString('en-US', {
-                                                  year: 'numeric', month: 'short', day: 'numeric'
-                                              })}</p>
-                                              <p class="text-sm text-gray-500 truncate max-w-md">${run.head_commit?.message || 'No commit message'}</p>
-                                          </div>
-                                      </div>
-                                      <a href="${run.html_url}" target="_blank" 
-                                         class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center shadow-lg hover:shadow-xl">
-                                          <i class="fas fa-external-link-alt mr-2"></i>View
-                                      </a>
-                                  `;
-                                  buildsList.appendChild(buildItem);
-                              });
-
-                              document.getElementById('total-builds').textContent = data.total_count || data.workflow_runs.length;
-                          } else {
-                              buildsList.innerHTML = '<div class="text-center text-gray-500 py-12"><i class="fas fa-folder-open text-4xl mb-4"></i><p class="text-lg">No builds found</p></div>';
-                          }
-                      } catch (error) {
-                          console.error('Failed to load builds:', error);
-                          document.getElementById('builds-list').innerHTML = 
-                              '<div class="text-center text-gray-500 py-12"><i class="fas fa-exclamation-triangle text-4xl mb-4"></i><p class="text-lg">Failed to load build history</p></div>';
+                  function downloadIOS() {
+                      const repoUrl = 'https://github.com/front-sio/misana_finance';
+                      const actionsUrl = `${repoUrl}/actions`;
+                      window.open(actionsUrl, '_blank');
+                      
+                      if (typeof gtag === 'function') {
+                          gtag('event', 'download_click', {
+                              'platform': 'ios',
+                              'timestamp': new Date().toISOString()
+                          });
                       }
                   }
-
-                  loadBuildHistory();
               </script>
           </body>
           </html>
