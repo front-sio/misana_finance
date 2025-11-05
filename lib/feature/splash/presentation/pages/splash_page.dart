@@ -284,18 +284,18 @@ class _SplashPageState extends State<SplashPage>
                   end: Alignment.bottomRight,
                   colors: [
                     Color.lerp(
-                      BrandColors.orange.withOpacity(0.8),
+                      BrandColors.orange.withValues(alpha: 0.8),
                       BrandColors.orange,
                       _backgroundGradient.value,
                     )!,
                     Color.lerp(
                       BrandColors.orange,
-                      BrandColors.orange.withOpacity(0.9),
+                      BrandColors.orange.withValues(alpha: 0.9),
                       _backgroundGradient.value,
                     )!,
                     Color.lerp(
-                      BrandColors.orange.withOpacity(0.9),
-                      BrandColors.orange.withOpacity(0.7),
+                      BrandColors.orange.withValues(alpha: 0.9),
+                      BrandColors.orange.withValues(alpha: 0.7),
                       _backgroundGradient.value,
                     )!,
                   ],
@@ -343,7 +343,7 @@ class _SplashPageState extends State<SplashPage>
       child: Text(
         _getTimeBasedGreeting(),
         style: TextStyle(
-          color: BrandColors.white.withOpacity(0.9),
+          color: BrandColors.white.withValues(alpha: 0.9),
           fontSize: isTablet ? 20 : 18,
           fontWeight: FontWeight.w300,
           letterSpacing: 0.5,
@@ -368,7 +368,7 @@ class _SplashPageState extends State<SplashPage>
                   height: size.width * 0.4,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: BrandColors.white.withOpacity(0.08),
+                    color: BrandColors.white.withValues(alpha: 0.08),
                   ),
                 ),
               ),
@@ -383,7 +383,7 @@ class _SplashPageState extends State<SplashPage>
                   height: size.width * 0.35,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: BrandColors.white.withOpacity(0.06),
+                    color: BrandColors.white.withValues(alpha: 0.06),
                   ),
                 ),
               ),
@@ -398,7 +398,7 @@ class _SplashPageState extends State<SplashPage>
                   height: size.width * 0.2,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: BrandColors.white.withOpacity(0.05),
+                    color: BrandColors.white.withValues(alpha: 0.05),
                   ),
                 ),
               ),
@@ -430,7 +430,7 @@ class _SplashPageState extends State<SplashPage>
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: BrandColors.white.withOpacity(0.2),
+                            color: BrandColors.white.withValues(alpha: 0.2),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -439,11 +439,11 @@ class _SplashPageState extends State<SplashPage>
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(24),
                         child: Image.asset(
-                          'assets/images/orange.svg',
+                          'assets/images/misana_orange.png',
                           fit: BoxFit.contain,
                           errorBuilder: (_, __, ___) => Container(
                             decoration: BoxDecoration(
-                              color: BrandColors.white.withOpacity(0.15),
+                              color: BrandColors.white.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(24),
                             ),
                             child: Icon(
@@ -470,7 +470,7 @@ class _SplashPageState extends State<SplashPage>
                     letterSpacing: 1.2,
                     shadows: [
                       Shadow(
-                        color: BrandColors.orange.withOpacity(0.3),
+                        color: BrandColors.orange.withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -505,9 +505,9 @@ class _SplashPageState extends State<SplashPage>
                     child: CircularProgressIndicator(
                       strokeWidth: 3,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        BrandColors.white.withOpacity(0.9),
+                        BrandColors.white.withValues(alpha: 0.9),
                       ),
-                      backgroundColor: BrandColors.white.withOpacity(0.2),
+                      backgroundColor: BrandColors.white.withValues(alpha: 0.2),
                     ),
                   ),
                   SizedBox(height: isTablet ? 24 : 20),
@@ -515,7 +515,7 @@ class _SplashPageState extends State<SplashPage>
                   Icon(
                     Icons.wifi_off_rounded,
                     size: isTablet ? 40 : 32,
-                    color: BrandColors.white.withOpacity(0.9),
+                    color: BrandColors.white.withValues(alpha: 0.9),
                   ),
                   SizedBox(height: isTablet ? 24 : 20),
                 ],
@@ -528,7 +528,7 @@ class _SplashPageState extends State<SplashPage>
                         _currentMessage.isEmpty ? _messages[0] : _currentMessage,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: BrandColors.white.withOpacity(0.9),
+                          color: BrandColors.white.withValues(alpha: 0.9),
                           fontSize: isTablet ? 18 : 16,
                           fontWeight: FontWeight.w500,
                           letterSpacing: 0.5,
@@ -557,7 +557,7 @@ class _SplashPageState extends State<SplashPage>
                 'Your Financial Journey Starts Here',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: BrandColors.white.withOpacity(0.8),
+                  color: BrandColors.white.withValues(alpha: 0.8),
                   fontSize: isTablet ? 16 : 14,
                   fontWeight: FontWeight.w400,
                   letterSpacing: 0.3,
@@ -568,7 +568,7 @@ class _SplashPageState extends State<SplashPage>
                 'Misana Stawi',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: BrandColors.white.withOpacity(0.7),
+                  color: BrandColors.white.withValues(alpha: 0.7),
                   fontSize: isTablet ? 14 : 12,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 1.0,

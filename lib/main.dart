@@ -36,7 +36,6 @@ import 'feature/home/domain/home_repository.dart';
 import 'feature/kyc/data/datasources/kyc_remote_data_source.dart';
 import 'feature/kyc/domain/kyc_repository.dart';
 import 'feature/kyc/presentation/bloc/kyc_bloc.dart';
-import 'feature/kyc/presentation/bloc/kyc_event.dart';
 import 'feature/kyc/presentation/pages/kyc_verification_page.dart';
 
 import 'feature/savings/data/datasources/savings_remote_data_source.dart';
@@ -66,7 +65,7 @@ Future<void> main() async {
   
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  SystemChrome.setSystemUIOverlayStyle(
+   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
@@ -90,7 +89,7 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   final seenOnboarding = prefs.getBool('seenOnboarding') ?? false;
 
-  final baseUrl = const String.fromEnvironment(
+  const baseUrl = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'https://misana.stebofarm.co.tz',
   );
