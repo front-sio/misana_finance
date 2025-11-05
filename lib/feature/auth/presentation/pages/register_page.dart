@@ -555,7 +555,6 @@ class _Field extends StatelessWidget {
   final Widget? suffix;
 
   const _Field({
-    super.key,
     required this.controller,
     required this.label,
     required this.icon,

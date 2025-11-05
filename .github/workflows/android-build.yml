@@ -1,0 +1,236 @@
+name: Build Android App (Flutter)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+        - release
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter (Dart ≥ 3.9)
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.6'
+          channel: 'stable'
+
+      - name: Disable Flutter analytics (CI noise)
+        run: flutter config --no-analytics
+
+      - name: Show Flutter/Dart versions
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Cache Flutter and Gradle deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}-${{ hashFiles('**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Generate native splash screens
+        run: flutter pub run flutter_native_splash:create
+
+      - name: Clean project
+        run: flutter clean && flutter pub get
+
+      - name: Build Android APK (Release Only)
+        run: |
+          flutter build apk --release --split-per-abi --build-name=1.0.0 --build-number=${{ github.run_number }}
+          flutter build apk --release --build-name=1.0.0 --build-number=${{ github.run_number }}
+
+      - name: Get app version
+        id: version
+        run: |
+          VERSION=$(flutter --version | head -n 1 | cut -d ' ' -f 2)
+          APP_VERSION="1.0.0"
+          echo "flutter_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+
+      - name: Prepare Android build artifacts
+        run: |
+          mkdir -p build-artifacts
+          
+          cp build/app/outputs/flutter-apk/app-release.apk build-artifacts/misana-finance-universal-release.apk || true
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build-artifacts/misana-finance-arm64-release.apk || true
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk build-artifacts/misana-finance-arm32-release.apk || true
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk build-artifacts/misana-finance-x64-release.apk || true
+          
+          cat > build-artifacts/android-build-info.txt << EOF
+          ===========================================
+                  MISANA FINANCE ANDROID BUILD
+          ===========================================
+          
+          📱 App Details:
+          - Name: Misana Finance
+          - Version: ${{ steps.version.outputs.app_version }}
+          - Build: #${{ steps.version.outputs.build_number }}
+          - Type: Release (Android)
+          - Flutter: ${{ steps.version.outputs.flutter_version }}
+          
+          🔧 Build Info:
+          - Branch: ${{ github.ref_name }}
+          - Commit: ${{ github.sha }}
+          - Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          - API: https://misana.stebofarm.co.tz
+          
+          📥 Installation (Android):
+          1. Download APK file to your Android device
+          2. Settings → Security → Enable "Unknown Sources"
+          3. Open downloaded APK file → Install
+          4. Launch "Misana Finance" from app drawer
+          
+          🎯 Recommended APK Files:
+          - misana-finance-arm64-release.apk (Most modern devices)
+          - misana-finance-universal-release.apk (All devices, larger size)
+          - misana-finance-arm32-release.apk (Older devices)
+          - misana-finance-x64-release.apk (Emulators/tablets)
+          
+          🧪 Test Checklist:
+          □ App launch & splash screen
+          □ User registration/login  
+          □ KYC verification
+          □ Dashboard navigation
+          □ Account management
+          □ Financial operations
+          □ Network connectivity
+          □ Android-specific features
+          
+          ===========================================
+          EOF
+
+          ls -la build-artifacts/
+
+      - name: Upload Android build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: misana-finance-android-release-build-${{ github.run_number }}
+          path: build-artifacts/
+          retention-days: 30
+
+      - name: Create Android Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: android-v${{ steps.version.outputs.app_version }}-build${{ github.run_number }}
+          name: Misana Finance Android v${{ steps.version.outputs.app_version }} (Build ${{ github.run_number }})
+          body: |
+            ## 🤖 Misana Finance Android Release
+            
+            **Version:** ${{ steps.version.outputs.app_version }}  
+            **Build:** ${{ github.run_number }}  
+            **Platform:** Android (Release)  
+            **Branch:** ${{ github.ref_name }}  
+            **Commit:** ${{ github.sha }}  
+            **API:** https://misana.stebofarm.co.tz
+            
+            ### 📱 Download for Android
+            Download the APK that matches your device from the assets below.
+            
+            ### 📋 Installation Instructions
+            1. Download the appropriate APK file
+            2. On your Android device, go to Settings → Security → Enable "Unknown Sources"
+            3. Open the downloaded APK file and tap "Install"
+            4. Launch "Misana Finance" from your app drawer
+            
+            ### 🧪 Testing Instructions
+            - [ ] App launch and splash screen
+            - [ ] User registration and login
+            - [ ] KYC verification process
+            - [ ] Dashboard navigation
+            - [ ] Account management
+            - [ ] Financial operations
+            - [ ] Network connectivity with API
+            - [ ] Android-specific features
+            
+            ### 🌐 API Information
+            This build connects to: **https://misana.stebofarm.co.tz**
+            
+            **Report Android issues:** [Create an issue](https://github.com/${{ github.repository }}/issues/new?labels=Android)
+          files: |
+            build-artifacts/*.apk
+            build-artifacts/android-build-info.txt
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create-android-summary:
+    runs-on: ubuntu-latest
+    needs: build-android
+    if: always()
+    
+    steps:
+      - name: Android Build Status Summary
+        run: |
+          if [ "${{ needs.build-android.result }}" == "success" ]; then
+            echo "🤖 **ANDROID BUILD SUCCESSFUL** 🤖" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## 🎉 Misana Finance Android Ready!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📥 Download Links" >> $GITHUB_STEP_SUMMARY
+            echo "- [🤖 **Download Android APKs**](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+            echo "- [📱 **Android/iOS Testing Portal**](https://front-sio.github.io/misana_finance)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🚀 Quick Install" >> $GITHUB_STEP_SUMMARY
+            echo "1. Click download link above" >> $GITHUB_STEP_SUMMARY
+            echo "2. Get \`misana-finance-arm64-release.apk\`" >> $GITHUB_STEP_SUMMARY
+            echo "3. Install on your Android device" >> $GITHUB_STEP_SUMMARY
+            echo "4. Test and report issues" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📊 Build Details" >> $GITHUB_STEP_SUMMARY
+            echo "- **Version:** 1.0.0" >> $GITHUB_STEP_SUMMARY
+            echo "- **Build:** #${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Platform:** Android Release" >> $GITHUB_STEP_SUMMARY
+            echo "- **API:** https://misana.stebofarm.co.tz" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **ANDROID BUILD FAILED** ❌" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## 🛠️ Android Build Issues Detected" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "The Android build encountered errors. Please check:" >> $GITHUB_STEP_SUMMARY
+            echo "1. Review error messages in the build steps" >> $GITHUB_STEP_SUMMARY
+            echo "2. Check Android configurations" >> $GITHUB_STEP_SUMMARY
+            echo "3. Verify Gradle dependencies" >> $GITHUB_STEP_SUMMARY
+            echo "4. Push fixes to trigger a new build" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔗 Helpful Resources" >> $GITHUB_STEP_SUMMARY
+            echo "- [🐛 Report Android Issues](https://github.com/${{ github.repository }}/issues/new?labels=Android)" >> $GITHUB_STEP_SUMMARY
+            echo "- [📝 View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          fi

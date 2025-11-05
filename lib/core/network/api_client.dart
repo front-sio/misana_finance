@@ -388,8 +388,8 @@ class ApiClient {
   String? _extractServerMessage(Response<dynamic>? res) {
     if (res == null) return null;
     final xMsg = res.headers.map['x-message'];
-    if (xMsg != null && xMsg.isNotEmpty && (xMsg.first ?? '').toString().trim().isNotEmpty) {
-      return xMsg.first!.toString();
+    if (xMsg != null && xMsg.isNotEmpty && (xMsg.first).toString().trim().isNotEmpty) {
+      return xMsg.first.toString();
     }
 
     final data = res.data;
