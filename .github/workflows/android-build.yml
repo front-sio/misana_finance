@@ -217,7 +217,6 @@ jobs:
           ### Testing Focus Areas
           - ✅ Splash screen and app initialization
           - ✅ User authentication flow
-          - ✅ API connectivity to https://misana.stebofarm.co.tz
           - ✅ Core financial features
           - ✅ UI responsiveness across devices
           
