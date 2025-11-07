@@ -449,26 +449,23 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                     builder: (context, child) {
                       return Transform.scale(
                         scale: _breatheScale.value,
-                        child: Container(
-                         
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/images/misana_white.png',
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/misana_white.png',
+                            width: isTablet ? size.width * 0.35 : size.width * 0.45,
+                            height: isTablet ? size.width * 0.35 : size.width * 0.45,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
                               width: isTablet ? size.width * 0.35 : size.width * 0.45,
                               height: isTablet ? size.width * 0.35 : size.width * 0.45,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                width: isTablet ? size.width * 0.35 : size.width * 0.45,
-                                height: isTablet ? size.width * 0.35 : size.width * 0.45,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: BrandColors.white.withValues(alpha: 0.15),
-                                ),
-                                child: Icon(
-                                  Icons.account_balance_wallet_rounded,
-                                  size: isTablet ? 100 : 80,
-                                  color: BrandColors.white,
-                                ),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: BrandColors.white.withValues(alpha: 0.15),
+                              ),
+                              child: Icon(
+                                Icons.account_balance_wallet_rounded,
+                                size: isTablet ? 100 : 80,
+                                color: BrandColors.white,
                               ),
                             ),
                           ),
