@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:misana_finance_app/core/theme/app_theme.dart';
+import 'package:misana_finance_app/core/i18n/locale_extensions.dart';
 import 'package:misana_finance_app/feature/splash/presentation/pages/splash_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -17,38 +18,40 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
   int _page = 0;
 
   // Using placeholder images from Unsplash
-  final List<OnboardContent> _pages = [
-    OnboardContent(
-      image: 'https://images.unsplash.com/photo-1579621970795-87facc2f976d',
-      title: 'Welcome to Misana',
-      subtitle: 'Your trusted partner for secure savings and financial growth.',
-      backgroundColor: BrandColors.purple,
-    ),
-    OnboardContent(
-      image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f',
-      title: 'Set Your Goals',
-      subtitle: 'Create personalized savings plans and reach your financial goals faster.',
-      backgroundColor: BrandColors.orange,
-    ),
-    OnboardContent(
-      image: 'https://images.unsplash.com/photo-1565514020179-026b92b84bb6',
-      title: 'Save Flexibly',
-      subtitle: 'Choose how much and how often you want to save - daily, weekly, or monthly.',
-      backgroundColor: BrandColors.purple,
-    ),
-    OnboardContent(
-      image: 'https://images.unsplash.com/photo-1559526324-593bc073d938',
-      title: 'Track Progress',
-      subtitle: 'Watch your savings grow with detailed insights and analytics.',
-      backgroundColor: BrandColors.orange,
-    ),
-    OnboardContent(
-      image: 'https://images.unsplash.com/photo-1563986768817-257bf91c5e9d',
-      title: 'Bank-Grade Security',
-      subtitle: 'Your savings are protected with advanced security measures.',
-      backgroundColor: BrandColors.purple,
-    ),
-  ];
+  List<OnboardContent> _getPages() {
+    return [
+      OnboardContent(
+        image: 'https://images.unsplash.com/photo-1579621970795-87facc2f976d',
+        title: context.welcomeToMisanaOnboarding,
+        subtitle: context.trustedPartnerOnboarding,
+        backgroundColor: BrandColors.purple,
+      ),
+      OnboardContent(
+        image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f',
+        title: context.setYourGoals,
+        subtitle: context.setYourGoalsDesc,
+        backgroundColor: BrandColors.orange,
+      ),
+      OnboardContent(
+        image: 'https://images.unsplash.com/photo-1565514020179-026b92b84bb6',
+        title: context.saveFlexibly,
+        subtitle: context.saveFlexiblyDesc,
+        backgroundColor: BrandColors.purple,
+      ),
+      OnboardContent(
+        image: 'https://images.unsplash.com/photo-1559526324-593bc073d938',
+        title: context.trackProgress,
+        subtitle: context.trackProgressDesc,
+        backgroundColor: BrandColors.orange,
+      ),
+      OnboardContent(
+        image: 'https://images.unsplash.com/photo-1563986768817-257bf91c5e9d',
+        title: context.bankGradeSecurity,
+        subtitle: context.bankGradeSecurityDesc,
+        backgroundColor: BrandColors.purple,
+      ),
+    ];
+  }
 
   late final AnimationController _fadeController;
   late final AnimationController _slideController;
@@ -109,7 +112,8 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
   }
 
   void _goToNext() {
-    if (_page == _pages.length - 1) {
+    final pages = _getPages();
+    if (_page == pages.length - 1) {
       _completeOnboarding().then((_) {
         if (!mounted) return;
         Navigator.pushReplacement(
@@ -127,7 +131,8 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    final isLast = _page == _pages.length - 1;
+    final pages = _getPages();
+    final isLast = _page == pages.length - 1;
 
     return Scaffold(
       body: Stack(
@@ -137,7 +142,7 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
           AnimatedContainer(
             duration: const Duration(milliseconds: 500),
             decoration: BoxDecoration(
-              color: _pages[_page].backgroundColor,
+              color: pages[_page].backgroundColor,
             ),
           ),
 
@@ -147,14 +152,14 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
           SafeArea(
             child: Column(
               children: [
-                if (!isLast) _buildSkipButton(),
+                if (!isLast) _buildSkipButton(pages.length),
                 
                 Expanded(
                   child: PageView.builder(
                     controller: _controller,
-                    itemCount: _pages.length,
+                    itemCount: pages.length,
                     itemBuilder: (context, index) {
-                      final page = _pages[index];
+                      final page = pages[index];
                       return OnboardingContentWidget(
                         content: page,
                         fadeAnimation: _fadeIn,
@@ -164,7 +169,7 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
                   ),
                 ),
 
-                _buildNavigation(isLast),
+                _buildNavigation(isLast, pages),
               ],
             ),
           ),
@@ -204,14 +209,14 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
     );
   }
 
-  Widget _buildSkipButton() {
+  Widget _buildSkipButton(int pagesLength) {
     return Align(
       alignment: Alignment.centerRight,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: TextButton(
           onPressed: () => _controller.animateToPage(
-            _pages.length - 1,
+            pagesLength - 1,
             duration: const Duration(milliseconds: 400),
             curve: Curves.easeInOut,
           ),
@@ -219,16 +224,16 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           ),
-          child: const Text(
-            'Skip',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          child: Text(
+            context.skip,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildNavigation(bool isLast) {
+  Widget _buildNavigation(bool isLast, List<OnboardContent> pages) {
     return Container(
       padding: const EdgeInsets.all(24),
       child: Row(
@@ -236,7 +241,7 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
         children: [
           SmoothPageIndicator(
             controller: _controller,
-            count: _pages.length,
+            count: pages.length,
             effect: ExpandingDotsEffect(
               activeDotColor: Colors.white,
               dotColor: Colors.white.withAlpha(128),
@@ -252,7 +257,7 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
               onPressed: _goToNext,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: _pages[_page].backgroundColor,
+                foregroundColor: pages[_page].backgroundColor,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -267,7 +272,7 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    isLast ? 'Get Started' : 'Next',
+                    isLast ? context.getStarted : context.next,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
