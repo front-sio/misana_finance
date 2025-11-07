@@ -10,7 +10,7 @@ class KycBanner extends StatelessWidget {
     if (!show) return const SizedBox.shrink();
     final color = Theme.of(context).colorScheme.primary;
     return Material(
-      color: color.withOpacity(0.08),
+      color: color.withValues(alpha: 0.08),
       child: InkWell(
         onTap: onVerify,
         child: Padding(

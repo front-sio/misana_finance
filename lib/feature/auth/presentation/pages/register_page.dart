@@ -315,7 +315,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                               decoration: BoxDecoration(
-                                                color: scheme.primary.withOpacity(0.08),
+                                                color: scheme.primary.withValues(alpha: 0.08),
                                                 borderRadius: BorderRadius.circular(14),
                                               ),
                                               child: DropdownButton<String>(
@@ -413,7 +413,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                               label: Text(_t('male')),
                                               selected: gender == 'male',
                                               selectedColor: scheme.primary,
-                                              backgroundColor: scheme.primary.withOpacity(0.08),
+                                              backgroundColor: scheme.primary.withValues(alpha: 0.08),
                                               labelStyle: TextStyle(
                                                   color: gender == 'male' ? Colors.white : scheme.onSurface),
                                               onSelected: (_) => setState(() => gender = 'male'),
@@ -422,7 +422,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                               label: Text(_t('female')),
                                               selected: gender == 'female',
                                               selectedColor: scheme.primary,
-                                              backgroundColor: scheme.primary.withOpacity(0.08),
+                                              backgroundColor: scheme.primary.withValues(alpha: 0.08),
                                               labelStyle: TextStyle(
                                                   color: gender == 'female' ? Colors.white : scheme.onSurface),
                                               onSelected: (_) => setState(() => gender = 'female'),
@@ -527,7 +527,7 @@ class _LangButton extends StatelessWidget {
         position: PopupMenuPosition.under,
         icon: CircleAvatar(
           radius: 18,
-          backgroundColor: scheme.primary.withOpacity(0.12),
+          backgroundColor: scheme.primary.withValues(alpha: 0.12),
           child: Icon(Icons.language, color: scheme.primary),
         ),
         initialValue: current,
@@ -587,7 +587,7 @@ class _Field extends StatelessWidget {
         prefixIcon: Icon(icon, color: scheme.primary),
         suffixIcon: suffix,
         filled: true,
-        fillColor: isDark ? scheme.surfaceVariant.withOpacity(0.4) : Colors.grey.shade100,
+        fillColor: isDark ? scheme.surfaceContainerHighest.withValues(alpha: 0.4) : Colors.grey.shade100,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,

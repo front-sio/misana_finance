@@ -19,7 +19,7 @@ class KycBanner extends StatelessWidget {
     final cta = lang == 'sw' ? "Thibitisha" : "Verify";
 
     return Material(
-      color: scheme.primary.withOpacity(0.08),
+      color: scheme.primary.withValues(alpha: 0.08),
       child: InkWell(
         onTap: onVerify,
         child: Padding(

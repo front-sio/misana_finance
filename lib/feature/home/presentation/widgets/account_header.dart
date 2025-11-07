@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:misana_finance_app/core/theme/app_theme.dart';
 import 'package:misana_finance_app/feature/home/presentation/widgets/status_pill.dart';
 import 'package:misana_finance_app/feature/home/presentation/widgets/animated_amount.dart';
-import 'package:misana_finance_app/feature/splash/presentation/pages/splash_page.dart';
 
 class AccountHeader extends StatelessWidget {
   final String accountNumber;
@@ -10,6 +9,7 @@ class AccountHeader extends StatelessWidget {
   final double balance;
   final bool showBalance;
   final VoidCallback onToggleBalance;
+  final String userName;
   final List<Widget> actions;
 
   const AccountHeader({
@@ -19,6 +19,7 @@ class AccountHeader extends StatelessWidget {
     required this.balance,
     required this.showBalance,
     required this.onToggleBalance,
+    required this.userName,
     required this.actions,
   });
 
@@ -28,7 +29,7 @@ class AccountHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(18, 26, 18, 28),
       decoration: const BoxDecoration(
-        color: BrandColors.purple,
+        color: BrandColors.orange,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
       ),
       child: Column(
@@ -36,7 +37,11 @@ class AccountHeader extends StatelessWidget {
         children: [
           const Text(
             'Welcome,',
-            style: TextStyle(color: Colors.white, fontSize: 20),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           const SizedBox(height: 4),
           Row(
@@ -44,22 +49,22 @@ class AccountHeader extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'first name last name',
+                  userName,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
-                    fontSize: 16,
+                    fontSize: 20,
                   ),
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-                const SizedBox(width: 2),
-               StatusPill(status: status),
-                const SizedBox(width: 12),
+              const SizedBox(width: 8),
+              StatusPill(status: status),
+              const SizedBox(width: 12),
               _buildBalanceToggle(),
             ],
           ),
-         
           const SizedBox(height: 18),
           _buildBalanceRow(),
           const SizedBox(height: 22),
@@ -82,6 +87,7 @@ class AccountHeader extends StatelessWidget {
           showBalance ? Icons.visibility : Icons.visibility_off,
           key: ValueKey(showBalance),
           color: Colors.white,
+          size: 24,
         ),
       ),
     );
@@ -92,7 +98,11 @@ class AccountHeader extends StatelessWidget {
       children: [
         const Text(
           'Balance: ',
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 220),
@@ -106,7 +116,7 @@ class AccountHeader extends StatelessWidget {
                   width: 70,
                   height: 18,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.18),
+                    color: Colors.white.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),

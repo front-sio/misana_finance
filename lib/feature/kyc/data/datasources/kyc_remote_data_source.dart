@@ -46,4 +46,11 @@ class KycRemoteDataSource {
     if (data is Map<String, dynamic>) return data;
     throw const FormatException('Unexpected response for KYC submit');
   }
+
+  Future<Map<String, dynamic>> getVerificationStatus(String userId) async {
+    final Response res = await client.get('/kyc/verification-status/$userId');
+    final data = res.data;
+    if (data is Map<String, dynamic>) return data;
+    return <String, dynamic>{'status': 'unknown'};
+  }
 }

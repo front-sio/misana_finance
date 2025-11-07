@@ -15,8 +15,7 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage>
-    with TickerProviderStateMixin {
+class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   Timer? _failSafeTimer;
   Timer? _messageTimer;
   
@@ -24,15 +23,18 @@ class _SplashPageState extends State<SplashPage>
   late AnimationController _backgroundController;
   late AnimationController _progressController;
   late AnimationController _messageController;
+  late AnimationController _breatheController;
+  late AnimationController _glowController;
   
   late Animation<double> _logoFadeIn;
   late Animation<double> _logoScale;
-  late Animation<double> _logoRotation;
   late Animation<double> _backgroundGradient;
   late Animation<double> _progressFade;
   late Animation<double> _textSlide;
   late Animation<double> _brandFade;
   late Animation<double> _messageFade;
+  late Animation<double> _breatheScale;
+  late Animation<double> _glowPulse;
   
   bool _showProgress = false;
   String _currentMessage = '';
@@ -85,6 +87,16 @@ class _SplashPageState extends State<SplashPage>
       vsync: this,
     );
 
+    _breatheController = AnimationController(
+      duration: const Duration(milliseconds: 2500),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _glowController = AnimationController(
+      duration: const Duration(milliseconds: 3000),
+      vsync: this,
+    )..repeat(reverse: true);
+
     _logoFadeIn = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _logoController,
@@ -92,17 +104,24 @@ class _SplashPageState extends State<SplashPage>
       ),
     );
 
-    _logoScale = Tween<double>(begin: 0.5, end: 1.0).animate(
+    _logoScale = Tween<double>(begin: 0.6, end: 1.0).animate(
       CurvedAnimation(
         parent: _logoController,
-        curve: const Interval(0.2, 0.8, curve: Curves.elasticOut),
+        curve: const Interval(0.2, 1.0, curve: Curves.elasticOut),
       ),
     );
 
-    _logoRotation = Tween<double>(begin: -0.2, end: 0.0).animate(
+    _breatheScale = Tween<double>(begin: 1.0, end: 1.08).animate(
       CurvedAnimation(
-        parent: _logoController,
-        curve: const Interval(0.3, 0.9, curve: Curves.easeOutBack),
+        parent: _breatheController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _glowPulse = Tween<double>(begin: 0.3, end: 0.7).animate(
+      CurvedAnimation(
+        parent: _glowController,
+        curve: Curves.easeInOut,
       ),
     );
 
@@ -145,11 +164,11 @@ class _SplashPageState extends State<SplashPage>
   void _startAnimationSequence() {
     _backgroundController.forward();
     
-    Future.delayed(const Duration(milliseconds: 300), () {
+    Future.delayed(const Duration(milliseconds: 200), () {
       if (mounted) _logoController.forward();
     });
 
-    Future.delayed(const Duration(milliseconds: 1200), () {
+    Future.delayed(const Duration(milliseconds: 1400), () {
       if (mounted) {
         setState(() => _showProgress = true);
         _progressController.forward();
@@ -159,7 +178,7 @@ class _SplashPageState extends State<SplashPage>
 
   void _startMessageRotation() {
     _updateMessage();
-    _messageTimer = Timer.periodic(const Duration(milliseconds: 2000), (timer) {
+    _messageTimer = Timer.periodic(const Duration(milliseconds: 2200), (timer) {
       if (mounted && _messageIndex < _messages.length - 1 && _finalMessage.isEmpty) {
         _updateMessage();
       } else if (!mounted) {
@@ -235,6 +254,8 @@ class _SplashPageState extends State<SplashPage>
     _backgroundController.dispose();
     _progressController.dispose();
     _messageController.dispose();
+    _breatheController.dispose();
+    _glowController.dispose();
     super.dispose();
   }
 
@@ -284,18 +305,18 @@ class _SplashPageState extends State<SplashPage>
                   end: Alignment.bottomRight,
                   colors: [
                     Color.lerp(
-                      BrandColors.orange.withValues(alpha: 0.8),
+                      BrandColors.orange.withValues(alpha: 0.85),
                       BrandColors.orange,
                       _backgroundGradient.value,
                     )!,
                     Color.lerp(
                       BrandColors.orange,
-                      BrandColors.orange.withValues(alpha: 0.9),
+                      BrandColors.orange.withValues(alpha: 0.95),
                       _backgroundGradient.value,
                     )!,
                     Color.lerp(
                       BrandColors.orange.withValues(alpha: 0.9),
-                      BrandColors.orange.withValues(alpha: 0.7),
+                      BrandColors.orange.withValues(alpha: 0.75),
                       _backgroundGradient.value,
                     )!,
                   ],
@@ -311,9 +332,9 @@ class _SplashPageState extends State<SplashPage>
                       ),
                       child: Column(
                         children: [
-                          SizedBox(height: size.height * 0.12),
+                          SizedBox(height: size.height * 0.1),
                           _buildGreetingSection(isTablet),
-                          SizedBox(height: size.height * 0.04),
+                          SizedBox(height: size.height * 0.05),
                           Expanded(
                             flex: 3,
                             child: _buildLogoSection(size, isTablet),
@@ -343,10 +364,10 @@ class _SplashPageState extends State<SplashPage>
       child: Text(
         _getTimeBasedGreeting(),
         style: TextStyle(
-          color: BrandColors.white.withValues(alpha: 0.9),
-          fontSize: isTablet ? 20 : 18,
+          color: BrandColors.white.withValues(alpha: 0.95),
+          fontSize: isTablet ? 22 : 19,
           fontWeight: FontWeight.w300,
-          letterSpacing: 0.5,
+          letterSpacing: 0.8,
         ),
       ),
     );
@@ -359,13 +380,28 @@ class _SplashPageState extends State<SplashPage>
         return Stack(
           children: [
             Positioned(
-              top: -size.width * 0.15,
-              left: -size.width * 0.15,
+              top: -size.width * 0.2,
+              left: -size.width * 0.2,
               child: Transform.scale(
                 scale: 0.5 + (0.5 * _backgroundGradient.value),
                 child: Container(
-                  width: size.width * 0.4,
-                  height: size.width * 0.4,
+                  width: size.width * 0.5,
+                  height: size.width * 0.5,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: BrandColors.white.withValues(alpha: 0.1),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: size.height * 0.05,
+              right: -size.width * 0.15,
+              child: Transform.scale(
+                scale: 0.7 + (0.3 * _backgroundGradient.value),
+                child: Container(
+                  width: size.width * 0.45,
+                  height: size.width * 0.45,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: BrandColors.white.withValues(alpha: 0.08),
@@ -374,31 +410,16 @@ class _SplashPageState extends State<SplashPage>
               ),
             ),
             Positioned(
-              bottom: size.height * 0.1,
-              right: -size.width * 0.1,
-              child: Transform.scale(
-                scale: 0.7 + (0.3 * _backgroundGradient.value),
-                child: Container(
-                  width: size.width * 0.35,
-                  height: size.width * 0.35,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: BrandColors.white.withValues(alpha: 0.06),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: size.height * 0.25,
-              right: size.width * 0.8,
+              top: size.height * 0.3,
+              right: size.width * 0.85,
               child: Transform.scale(
                 scale: _backgroundGradient.value,
                 child: Container(
-                  width: size.width * 0.2,
-                  height: size.width * 0.2,
+                  width: size.width * 0.25,
+                  height: size.width * 0.25,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: BrandColors.white.withValues(alpha: 0.05),
+                    color: BrandColors.white.withValues(alpha: 0.06),
                   ),
                 ),
               ),
@@ -411,7 +432,7 @@ class _SplashPageState extends State<SplashPage>
 
   Widget _buildLogoSection(Size size, bool isTablet) {
     return AnimatedBuilder(
-      animation: _logoController,
+      animation: Listenable.merge([_logoController, _breatheController, _glowController]),
       builder: (context, child) {
         return Center(
           child: Column(
@@ -421,58 +442,64 @@ class _SplashPageState extends State<SplashPage>
                 opacity: _logoFadeIn,
                 child: ScaleTransition(
                   scale: _logoScale,
-                  child: Transform.rotate(
-                    angle: _logoRotation.value,
-                    child: Container(
-                      width: isTablet ? size.width * 0.25 : size.width * 0.35,
-                      height: isTablet ? size.width * 0.25 : size.width * 0.35,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: BrandColors.white.withValues(alpha: 0.2),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
+                  child: AnimatedBuilder(
+                    animation: _breatheController,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _breatheScale.value,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: BrandColors.white.withValues(alpha: _glowPulse.value),
+                                blurRadius: 60,
+                                spreadRadius: 10,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: Image.asset(
-                          'assets/images/misana_orange.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => Container(
-                            decoration: BoxDecoration(
-                              color: BrandColors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            child: Icon(
-                              Icons.account_balance_wallet_rounded,
-                              size: isTablet ? 72 : 56,
-                              color: BrandColors.white,
+                          child: ClipOval(
+                            child: Image.asset(
+                              'assets/images/orange.png',
+                              width: isTablet ? size.width * 0.35 : size.width * 0.45,
+                              height: isTablet ? size.width * 0.35 : size.width * 0.45,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                width: isTablet ? size.width * 0.35 : size.width * 0.45,
+                                height: isTablet ? size.width * 0.35 : size.width * 0.45,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: BrandColors.white.withValues(alpha: 0.15),
+                                ),
+                                child: Icon(
+                                  Icons.account_balance_wallet_rounded,
+                                  size: isTablet ? 100 : 80,
+                                  color: BrandColors.white,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ),
               ),
-              SizedBox(height: isTablet ? 32 : 24),
+              SizedBox(height: isTablet ? 40 : 32),
               FadeTransition(
                 opacity: _logoFadeIn,
                 child: Text(
                   'Misana Finance',
                   style: TextStyle(
                     color: BrandColors.white,
-                    fontSize: isTablet ? 32 : 28,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
+                    fontSize: isTablet ? 36 : 30,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
                     shadows: [
                       Shadow(
-                        color: BrandColors.orange.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                        color: Colors.black.withValues(alpha: 0.25),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
@@ -500,24 +527,24 @@ class _SplashPageState extends State<SplashPage>
               children: [
                 if (!_hasError) ...[
                   SizedBox(
-                    width: isTablet ? 40 : 32,
-                    height: isTablet ? 40 : 32,
+                    width: isTablet ? 44 : 36,
+                    height: isTablet ? 44 : 36,
                     child: CircularProgressIndicator(
-                      strokeWidth: 3,
+                      strokeWidth: 3.5,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        BrandColors.white.withValues(alpha: 0.9),
+                        BrandColors.white.withValues(alpha: 0.95),
                       ),
-                      backgroundColor: BrandColors.white.withValues(alpha: 0.2),
+                      backgroundColor: BrandColors.white.withValues(alpha: 0.25),
                     ),
                   ),
-                  SizedBox(height: isTablet ? 24 : 20),
+                  SizedBox(height: isTablet ? 28 : 24),
                 ] else ...[
                   Icon(
                     Icons.wifi_off_rounded,
-                    size: isTablet ? 40 : 32,
-                    color: BrandColors.white.withValues(alpha: 0.9),
+                    size: isTablet ? 44 : 36,
+                    color: BrandColors.white.withValues(alpha: 0.95),
                   ),
-                  SizedBox(height: isTablet ? 24 : 20),
+                  SizedBox(height: isTablet ? 28 : 24),
                 ],
                 AnimatedBuilder(
                   animation: _messageController,
@@ -528,10 +555,10 @@ class _SplashPageState extends State<SplashPage>
                         _currentMessage.isEmpty ? _messages[0] : _currentMessage,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: BrandColors.white.withValues(alpha: 0.9),
-                          fontSize: isTablet ? 18 : 16,
+                          color: BrandColors.white.withValues(alpha: 0.92),
+                          fontSize: isTablet ? 19 : 17,
                           fontWeight: FontWeight.w500,
-                          letterSpacing: 0.5,
+                          letterSpacing: 0.6,
                         ),
                       ),
                     );
@@ -557,21 +584,21 @@ class _SplashPageState extends State<SplashPage>
                 'Your Financial Journey Starts Here',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: BrandColors.white.withValues(alpha: 0.8),
-                  fontSize: isTablet ? 16 : 14,
+                  color: BrandColors.white.withValues(alpha: 0.85),
+                  fontSize: isTablet ? 17 : 15,
                   fontWeight: FontWeight.w400,
-                  letterSpacing: 0.3,
+                  letterSpacing: 0.4,
                 ),
               ),
-              SizedBox(height: isTablet ? 12 : 8),
+              SizedBox(height: isTablet ? 14 : 10),
               Text(
                 'Misana Stawi',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: BrandColors.white.withValues(alpha: 0.7),
-                  fontSize: isTablet ? 14 : 12,
+                  color: BrandColors.white.withValues(alpha: 0.75),
+                  fontSize: isTablet ? 15 : 13,
                   fontWeight: FontWeight.w600,
-                  letterSpacing: 1.0,
+                  letterSpacing: 1.2,
                 ),
               ),
             ],

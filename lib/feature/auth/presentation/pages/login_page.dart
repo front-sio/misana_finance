@@ -228,7 +228,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                             height: 260,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: scheme.primary.withOpacity(0.12),
+                              color: scheme.primary.withValues(alpha: 0.12),
                             ),
                           ),
                         ),
@@ -247,7 +247,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                             height: 320,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: scheme.secondary.withOpacity(0.10),
+                              color: scheme.secondary.withValues(alpha: 0.10),
                             ),
                           ),
                         ),
@@ -295,7 +295,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                               'assets/images/misana_orange.png',
                                               fit: BoxFit.cover,
                                               errorBuilder: (_, __, ___) => Container(
-                                                color: scheme.primary.withOpacity(0.08),
+                                                color: scheme.primary.withValues(alpha: 0.08),
                                                 child: Icon(Icons.savings_outlined, size: 40, color: scheme.primary),
                                               ),
                                             ),
@@ -494,7 +494,7 @@ class _LangButton extends StatelessWidget {
         position: PopupMenuPosition.under,
         icon: CircleAvatar(
           radius: 18,
-          backgroundColor: scheme.primary.withOpacity(0.12),
+          backgroundColor: scheme.primary.withValues(alpha: 0.12),
           child: Icon(Icons.language, color: scheme.primary),
         ),
         initialValue: current,
@@ -551,7 +551,7 @@ class _TextForm extends StatelessWidget {
         filled: true,
         fillColor: Theme.of(context).brightness == Brightness.light
             ? Colors.grey.shade100
-            : scheme.surfaceVariant.withOpacity(0.4),
+            : scheme.surfaceContainerHighest.withValues(alpha: 0.4),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,

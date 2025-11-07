@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:misana_finance_app/core/animations/animated_press.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:misana_finance_app/core/theme/app_theme.dart';
-import 'package:misana_finance_app/feature/splash/presentation/pages/splash_page.dart';
 
 class VideoGrid extends StatelessWidget {
   final List<VideoItem> items;
@@ -144,7 +143,7 @@ class _VideoCardState extends State<VideoCard> with SingleTickerProviderStateMix
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      Colors.black.withOpacity(0.7),
+                      Colors.black.withValues(alpha: 0.7),
                       Colors.transparent,
                     ],
                   ),
@@ -153,7 +152,7 @@ class _VideoCardState extends State<VideoCard> with SingleTickerProviderStateMix
               Center(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: BrandColors.orange,
@@ -161,7 +160,7 @@ class _VideoCardState extends State<VideoCard> with SingleTickerProviderStateMix
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),

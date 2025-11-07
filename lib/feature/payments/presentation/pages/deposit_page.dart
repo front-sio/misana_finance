@@ -158,7 +158,6 @@ class _DepositPageState extends State<DepositPage> {
 
   String _humanizeError(BuildContext context, Object? err) {
     final l = _lang(context);
-    bool en = !l.startsWith('sw');
     try {
       if (err is TimeoutException) return t(context, 'timeout');
       if (err is DioException) {
@@ -433,8 +432,8 @@ class _HeaderHero extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
-              ? [cs.primary.withOpacity(0.18), cs.secondary.withOpacity(0.18)]
-              : [cs.primary.withOpacity(0.12), cs.secondary.withOpacity(0.10)],
+              ? [cs.primary.withValues(alpha: 0.18), cs.secondary.withValues(alpha: 0.18)]
+              : [cs.primary.withValues(alpha: 0.12), cs.secondary.withValues(alpha: 0.10)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -444,7 +443,7 @@ class _HeaderHero extends StatelessWidget {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: cs.primary.withOpacity(0.14),
+              color: cs.primary.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(14),
             ),
             padding: const EdgeInsets.all(10),
@@ -506,10 +505,10 @@ class _PotCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: cs.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cs.outlineVariant.withOpacity(0.3)),
+          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.3)),
           boxShadow: [
             BoxShadow(
-              color: cs.shadow.withOpacity(0.06),
+              color: cs.shadow.withValues(alpha: 0.06),
               blurRadius: 10,
               offset: const Offset(0, 6),
             ),
@@ -521,7 +520,7 @@ class _PotCard extends StatelessWidget {
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: cs.primary.withOpacity(0.12),
+                  color: cs.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.all(10),
@@ -603,7 +602,7 @@ class _ShimmerPotCardState extends State<_ShimmerPotCard> with SingleTickerProvi
       child: Container(
         height: 84,
         decoration: BoxDecoration(
-          color: cs.surfaceVariant.withOpacity(0.45),
+          color: cs.surfaceContainerHighest.withValues(alpha: 0.45),
           borderRadius: BorderRadius.circular(16),
         ),
         margin: const EdgeInsets.only(bottom: 12),
@@ -761,14 +760,14 @@ class _DepositSheetState extends State<_DepositSheet> {
                     decoration: BoxDecoration(
                       color: cs.surface,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: cs.outlineVariant.withOpacity(0.3)),
+                      border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.3)),
                     ),
                     padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                     child: Row(
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            color: cs.primary.withOpacity(0.12),
+                            color: cs.primary.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           padding: const EdgeInsets.all(8),
@@ -883,9 +882,9 @@ class _QuickChip extends StatelessWidget {
       child: Ink(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: cs.secondary.withOpacity(0.10),
+          color: cs.secondary.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: cs.secondary.withOpacity(0.22)),
+          border: Border.all(color: cs.secondary.withValues(alpha: 0.22)),
         ),
         child: Text(
           label,

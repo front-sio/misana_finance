@@ -453,9 +453,9 @@ class _QuickChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: scheme.primary.withOpacity(0.08),
+          color: scheme.primary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: scheme.primary.withOpacity(0.25)),
+          border: Border.all(color: scheme.primary.withValues(alpha: 0.25)),
         ),
         child: Text(
           label,

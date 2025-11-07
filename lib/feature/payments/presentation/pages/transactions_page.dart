@@ -353,7 +353,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
       return ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: 8,
-        itemBuilder: (_, __) => _ShimmerLine(color: cs.surfaceVariant),
+        itemBuilder: (_, __) => _ShimmerLine(color: cs.surfaceContainerHighest),
       );
     }
 
@@ -658,7 +658,7 @@ class _FilterChipX extends StatelessWidget {
         onSelected: (_) => onTap(),
         selectedColor: cs.primary,
         labelStyle: TextStyle(color: selected ? cs.onPrimary : cs.onSurface),
-        backgroundColor: cs.surfaceVariant.withOpacity(0.5),
+        backgroundColor: cs.surfaceContainerHighest.withValues(alpha: 0.5),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     );
@@ -684,7 +684,7 @@ class _StatusChip extends StatelessWidget {
         showCheckmark: false,
         selectedColor: cs.secondary,
         labelStyle: TextStyle(color: selected ? cs.onSecondary : cs.onSurface),
-        backgroundColor: cs.surfaceVariant.withOpacity(0.4),
+        backgroundColor: cs.surfaceContainerHighest.withValues(alpha: 0.4),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     );
@@ -702,19 +702,19 @@ class _TxAvatar extends StatelessWidget {
     IconData icon;
     switch (view.type) {
       case 'deposit':
-        bg = Colors.green.withOpacity(0.15);
+        bg = Colors.green.withValues(alpha: 0.15);
         icon = Icons.arrow_downward_rounded;
         break;
       case 'withdrawal':
-        bg = Colors.red.withOpacity(0.15);
+        bg = Colors.red.withValues(alpha: 0.15);
         icon = Icons.arrow_upward_rounded;
         break;
       case 'transfer':
-        bg = Colors.blue.withOpacity(0.15);
+        bg = Colors.blue.withValues(alpha: 0.15);
         icon = Icons.swap_horiz_rounded;
         break;
       default:
-        bg = cs.surfaceVariant;
+        bg = cs.surfaceContainerHighest;
         icon = Icons.receipt_long;
     }
 
@@ -764,8 +764,8 @@ class _StatusPillSmall extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(999),
-        color: color.withOpacity(0.12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: color.withValues(alpha: 0.12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -846,7 +846,7 @@ class _ShimmerLineState extends State<_ShimmerLine> with SingleTickerProviderSta
       child: Container(
         height: 68,
         margin: const EdgeInsets.only(bottom: 10),
-        decoration: BoxDecoration(color: widget.color.withOpacity(0.4), borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(color: widget.color.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
