@@ -16,7 +16,8 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.25.3'
+          flutter-version: '3.25.x'
+          cache: true
 
       - name: Show Flutter version
         run: flutter --version
