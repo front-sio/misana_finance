@@ -16,10 +16,10 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.25.x'
+          channel: beta
           cache: true
 
-      - name: Show Flutter version
+      - name: Show Flutter & Dart versions
         run: flutter --version
 
       - name: Install dependencies
