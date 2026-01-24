@@ -1,0 +1,33 @@
+name: Build Flutter APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK (Sandbox)
+        run: |
+          flutter build apk --release \
+            --dart-define=API_BASE_URL=http://138.68.41.254
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: misana-sandbox-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
