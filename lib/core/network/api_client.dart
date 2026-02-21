@@ -224,9 +224,10 @@ class ApiClient {
     );
   }
 
+  // CHANGED: data type is dynamic to allow FormData
   Future<Response<T>> post<T>(
     String path, {
-    Map<String, dynamic>? data,
+    dynamic data,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
     CancelToken? cancelToken,
@@ -260,6 +261,7 @@ class ApiClient {
     );
   }
 
+  // CHANGED: data type is dynamic to allow FormData
   Future<Response<T>> put<T>(
     String path, {
     dynamic data,
@@ -275,6 +277,7 @@ class ApiClient {
     );
   }
 
+  // CHANGED: data type is dynamic to allow FormData
   Future<Response<T>> delete<T>(
     String path, {
     dynamic data,
@@ -287,6 +290,22 @@ class ApiClient {
       path,
       data: data,
       queryParameters: params,
+      options: Options(headers: headers, extra: extra),
+      cancelToken: cancelToken,
+    );
+  }
+
+  // CHANGED: data type is dynamic to allow FormData
+  Future<Response<T>> patch<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    CancelToken? cancelToken,
+  }) {
+    return dio.patch<T>(
+      path,
+      data: data,
       options: Options(headers: headers, extra: extra),
       cancelToken: cancelToken,
     );
@@ -427,7 +446,7 @@ class ApiClient {
         final code = e.response?.statusCode ?? 0;
         if (code >= 500) return withUrl('Server is temporarily unavailable. Please try again.');
         if (code == 400) return withUrl('Invalid request. Please review your input.');
-        if (code == 403) return withUrl('You don’t have permission to perform this action.');
+        if (code == 403) return withUrl('You don\'t have permission to perform this action.');
         if (code == 404) return withUrl('Requested resource was not found.');
         if (code == 409) return withUrl('Conflict detected. Please try again.');
         if (code == 422) return withUrl('Validation error. Please check the fields and try again.');

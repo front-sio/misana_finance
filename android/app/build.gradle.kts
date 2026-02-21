@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.misana.finance.app"
+    namespace = "com.misana.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.misana.finance.app"
+        applicationId = "com.misana.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

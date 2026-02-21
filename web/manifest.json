@@ -1,6 +1,6 @@
 {
-    "name": "misana_finance",
-    "short_name": "misana_finance",
+    "name": "Misana App",
+    "short_name": "Misana App",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,0 +1,30 @@
+/// Centralized translation strings for the Misana App
+class AppTranslations {
+  static const Map<String, Map<String, String>> translations = {
+    'title': {'sw': 'Misana Stawi', 'en': 'Misana Stawi'},
+    'subtitle': {'sw': 'Ingia kwa barua pepe, simu au jina la mtumiaji', 'en': 'Login with email, phone, or username'},
+    'identifier': {'sw': 'Barua pepe, Simu au Jina la mtumiaji', 'en': 'Email, Phone, or Username'},
+    'password': {'sw': 'Nenosiri', 'en': 'Password'},
+    'remember': {'sw': 'Nikumbuke', 'en': 'Remember me'},
+    'forgot': {'sw': 'Umesahau Nenosiri?', 'en': 'Forgot Password?'},
+    'login': {'sw': 'Ingia', 'en': 'Login'},
+    'or': {'sw': 'au', 'en': 'or'},
+    'register_q': {'sw': 'Huna akaunti?', 'en': 'Don\'t have an account?'},
+    'register': {'sw': 'Sajili', 'en': 'Register'},
+    'inactive': {'sw': 'Akaunti haijaamilishwa. Tafadhali thibitisha akaunti yako.', 'en': 'Account not active. Please verify your account.'},
+    'verify': {'sw': 'Thibitisha', 'en': 'Verify'},
+    'id_required': {'sw': 'Tafadhali weka barua pepe, simu au jina la mtumiaji', 'en': 'Please enter email, phone, or username'},
+    'pw_required': {'sw': 'Tafadhali weka nenosiri lako', 'en': 'Please enter your password'},
+    'terms': {'sw': 'Kwa kuendelea unakubali Masharti na Sera ya Faragha.', 'en': 'By continuing you agree to our Terms and Privacy Policy.'},
+    'language': {'sw': 'Lugha', 'en': 'Language'},
+    'swahili': {'sw': 'Kiswahili', 'en': 'Swahili'},
+    'english': {'sw': 'Kiingereza', 'en': 'English'},
+    'network_error': {'sw': 'Hujaunganishwa. Tafadhali angalia intaneti kisha jaribu tena.', 'en': 'You appear offline. Please check your connection and try again.'},
+    'bad_credentials': {'sw': 'Taarifa za kuingia si sahihi. Tafadhali jaribu tena.', 'en': 'Incorrect login details. Please try again.'},
+    'server_error': {'sw': 'Hitilafu ya mfumo. Tafadhali jaribu tena baadaye.', 'en': 'Server error. Please try again later.'},
+    'unknown_error': {'sw': 'Hitilafu imetokea. Tafadhali jaribu tena.', 'en': 'Something went wrong. Please try again.'},
+    'forbidden': {'sw': 'Huna ruhusa ya kufanya hatua hii.', 'en': 'You are not allowed to perform this action.'},
+    'not_found': {'sw': 'Akaunti haikupatikana.', 'en': 'Account not found.'},
+    'too_many': {'sw': 'Maombi mengi. Jaribu tena baadaye.', 'en': 'Too many requests. Please try again later.'},
+  };
+}
