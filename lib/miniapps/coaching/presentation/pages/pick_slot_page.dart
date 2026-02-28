@@ -96,30 +96,42 @@ class _PickSlotPageState extends State<PickSlotPage> {
                   return Center(child: Text(state.message));
                 }
                 if (state is SlotsLoaded) {
-                  final now = DateTime.now();
-                  final slots = state.slots
-                      .where((s) => !s.isBooked && s.endAt.isAfter(now))
-                      .toList();
+                  final slots = state.slots;
                   if (slots.isEmpty) {
                     return const Center(
-                      child: Text('No available slots for this day.'),
+                      child: Text('No slots for this day.'),
                     );
                   }
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: slots.length,
-                    itemBuilder: (context, index) {
-                      final slot = slots[index];
-                      return _SlotCard(
-                        slot: slot,
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            CoachingRoutes.checkout,
-                            arguments: {'topic': widget.topic, 'slot': slot},
-                          );
-                        },
-                      );
-                    },
+                  return Column(
+                    children: [
+                      const _SlotsLegend(),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: slots.length,
+                          itemBuilder: (context, index) {
+                            final slot = slots[index];
+                            final status = _slotStatus(slot);
+                            final canBook = status == _SlotStatus.available;
+                            return _SlotCard(
+                              slot: slot,
+                              status: status,
+                              onTap: canBook
+                                  ? () {
+                                      Navigator.of(context).pushNamed(
+                                        CoachingRoutes.checkout,
+                                        arguments: {
+                                          'topic': widget.topic,
+                                          'slot': slot,
+                                        },
+                                      );
+                                    }
+                                  : null,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   );
                 }
                 return const SizedBox.shrink();
@@ -132,33 +144,134 @@ class _PickSlotPageState extends State<PickSlotPage> {
   }
 }
 
+enum _SlotStatus { available, taken, busy }
+
+_SlotStatus _slotStatus(AvailabilitySlot slot) {
+  final now = DateTime.now();
+  if (slot.isBooked) return _SlotStatus.taken;
+  if (slot.endAt.isBefore(now)) return _SlotStatus.busy;
+  return _SlotStatus.available;
+}
+
 class _SlotCard extends StatelessWidget {
   final AvailabilitySlot slot;
-  final VoidCallback onTap;
+  final _SlotStatus status;
+  final VoidCallback? onTap;
 
-  const _SlotCard({required this.slot, required this.onTap});
+  const _SlotCard({
+    required this.slot,
+    required this.status,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final timeFmt = DateFormat('HH:mm');
+    final (label, bgColor, borderColor, textColor) = switch (status) {
+      _SlotStatus.available => (
+        'Available',
+        Colors.green.withValues(alpha: 0.10),
+        Colors.green.withValues(alpha: 0.45),
+        Colors.green.shade800,
+      ),
+      _SlotStatus.taken => (
+        'Taken',
+        Colors.red.withValues(alpha: 0.10),
+        Colors.red.withValues(alpha: 0.45),
+        Colors.red.shade800,
+      ),
+      _SlotStatus.busy => (
+        'Busy',
+        Colors.orange.withValues(alpha: 0.12),
+        Colors.orange.withValues(alpha: 0.50),
+        Colors.orange.shade900,
+      ),
+    };
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: scheme.surface,
+        color: bgColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: scheme.outlineVariant),
+        border: Border.all(color: borderColor),
       ),
       child: ListTile(
         title: Text(
           '${timeFmt.format(slot.startAt)} - ${timeFmt.format(slot.endAt)}',
         ),
         subtitle: Text(
-          'Available',
-          style: TextStyle(color: scheme.onSurfaceVariant),
+          label,
+          style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
         ),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: Icon(
+          onTap == null ? Icons.block : Icons.chevron_right,
+          color: textColor,
+        ),
         onTap: onTap,
+      ),
+    );
+  }
+}
+
+class _SlotsLegend extends StatelessWidget {
+  const _SlotsLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: const [
+          _LegendChip(
+            label: 'Available',
+            color: Color(0xFF2E7D32),
+            background: Color(0x1A2E7D32),
+          ),
+          _LegendChip(
+            label: 'Taken',
+            color: Color(0xFFC62828),
+            background: Color(0x1AC62828),
+          ),
+          _LegendChip(
+            label: 'Busy',
+            color: Color(0xFFEF6C00),
+            background: Color(0x1AEF6C00),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LegendChip extends StatelessWidget {
+  final String label;
+  final Color color;
+  final Color background;
+
+  const _LegendChip({
+    required this.label,
+    required this.color,
+    required this.background,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: background,
+        border: Border.all(color: color.withValues(alpha: 0.6)),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
+        ),
       ),
     );
   }

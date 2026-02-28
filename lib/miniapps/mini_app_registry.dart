@@ -13,7 +13,7 @@ class MiniAppRegistry {
         description: 'Payments, savings, and smart money tools.',
         icon: Icons.payments,
         accentColor: const Color(0xFFED702E),
-        comingSoon: false,
+        comingSoon: true,
         buildEntry: () => const FinanceApp.embedded(),
       ),
       MiniAppContract(

@@ -37,9 +37,95 @@ class CoachingRepositoryImpl implements CoachingRepository {
   }
 
   @override
-  Future<MeetingToken> requestMeetingToken({
-    required String bookingId,
-  }) {
+  Future<MeetingToken> requestMeetingToken({required String bookingId}) {
     return remote.requestMeetingToken(bookingId: bookingId);
+  }
+
+  @override
+  Future<MeetingToken> requestCoachMeetingToken({required String bookingId}) {
+    return remote.requestCoachMeetingToken(bookingId: bookingId);
+  }
+
+  @override
+  Future<List<UserBooking>> listMyBookings() {
+    return remote.listMyBookings();
+  }
+
+  @override
+  Future<List<CoachBooking>> listCoachBookings({
+    String? date,
+    String? dateFrom,
+    String? dateTo,
+    String? status,
+  }) {
+    return remote.listCoachBookings(
+      date: date,
+      dateFrom: dateFrom,
+      dateTo: dateTo,
+      status: status,
+    );
+  }
+
+  @override
+  Future<CoachBlockResult> blockCoachTime({
+    required DateTime startAt,
+    required DateTime endAt,
+    String? reason,
+  }) {
+    return remote.blockCoachTime(
+      startAt: startAt,
+      endAt: endAt,
+      reason: reason,
+    );
+  }
+
+  @override
+  Future<List<Topic>> listCoachTopics({String? search, bool? active}) {
+    return remote.listCoachTopics(search: search, active: active);
+  }
+
+  @override
+  Future<Topic> createCoachTopic({
+    required String title,
+    String? description,
+    required double price15,
+    required double price30,
+    String currency = 'TZS',
+    bool isActive = true,
+  }) {
+    return remote.createCoachTopic(
+      title: title,
+      description: description,
+      price15: price15,
+      price30: price30,
+      currency: currency,
+      isActive: isActive,
+    );
+  }
+
+  @override
+  Future<Topic> updateCoachTopic({
+    required String id,
+    String? title,
+    String? description,
+    double? price15,
+    double? price30,
+    String? currency,
+    bool? isActive,
+  }) {
+    return remote.updateCoachTopic(
+      id: id,
+      title: title,
+      description: description,
+      price15: price15,
+      price30: price30,
+      currency: currency,
+      isActive: isActive,
+    );
+  }
+
+  @override
+  Future<void> deleteCoachTopic(String id) {
+    return remote.deleteCoachTopic(id);
   }
 }

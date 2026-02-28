@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
@@ -25,11 +24,15 @@ class WebSocketService {
   io.Socket? _socket;
   bool _isConnected = false;
 
-  final _verificationController = StreamController<Map<String, dynamic>>.broadcast();
-  final _accountStatusController = StreamController<Map<String, dynamic>>.broadcast();
+  final _verificationController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _accountStatusController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
-  Stream<Map<String, dynamic>> get verificationStream => _verificationController.stream;
-  Stream<Map<String, dynamic>> get accountStatusStream => _accountStatusController.stream;
+  Stream<Map<String, dynamic>> get verificationStream =>
+      _verificationController.stream;
+  Stream<Map<String, dynamic>> get accountStatusStream =>
+      _accountStatusController.stream;
   bool get isConnected => _isConnected;
 
   WebSocketService({
@@ -40,18 +43,23 @@ class WebSocketService {
 
   /// Connect to Socket.IO server (idempotent).
   Future<void> connect() async {
-    if (_socket != null && _isConnected) return;
+    if (_socket != null) {
+      // Keep a single socket instance; let socket.io internal reconnection handle drops.
+      return;
+    }
 
     try {
       final token = await _storage.getAccessToken();
       if (token == null || token.isEmpty) {
-        if (kDebugMode) print('[WebSocket] No token found, skipping connection');
+        if (kDebugMode) {
+          print('[WebSocket] No token found, skipping connection');
+        }
         return;
       }
 
       final httpUrl = _normalizeHttpBaseUrl(baseUrl);
       final options = io.OptionBuilder()
-          .setTransports(['websocket']) // force WebSocket
+          .setTransports(['websocket', 'polling'])
           .setPath(_normalizeSocketPath(socketPath))
           .setAuth({'token': token}) // server expects token in auth
           .enableAutoConnect()
@@ -100,7 +108,9 @@ class WebSocketService {
 
       // Server welcome
       _socket!.on('connected', (data) {
-        if (kDebugMode) print('[WebSocket] Server acknowledged connection: $data');
+        if (kDebugMode) {
+          print('[WebSocket] Server acknowledged connection: $data');
+        }
       });
 
       // KYC events (pushed by server)
@@ -185,13 +195,39 @@ class WebSocketService {
   // Socket.IO expects HTTP(S) base URL, not WS(S)
   String _normalizeHttpBaseUrl(String url) {
     var u = url.trim();
-    if (u.endsWith('/')) u = u.substring(0, u.length - 1);
+    if (u.isEmpty) return u;
 
     // For Android emulator, redirect localhost to 10.0.2.2
-    if (!kIsWeb && Platform.isAndroid && u.contains('localhost')) {
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        u.contains('localhost')) {
       u = u.replaceFirst('localhost', '10.0.2.2');
     }
-    return u;
+
+    // Ensure socket client receives origin only (scheme://host:port).
+    // Passing pathful API URLs (e.g. /api/v1) can lead to malformed socket targets.
+    final uri = Uri.tryParse(u);
+    if (uri == null || uri.host.isEmpty) return u;
+
+    final scheme = (uri.scheme == 'https' || uri.scheme == 'wss')
+        ? 'https'
+        : 'http';
+    var host = uri.host;
+    var port = uri.hasPort ? uri.port : null;
+
+    // Gateway WS proxy for /kyc/socket.io can be unstable in local emulator setup.
+    // Route KYC socket traffic directly to kyc-service while keeping HTTP on gateway.
+    if (_normalizeSocketPath(socketPath).startsWith('/kyc/socket.io')) {
+      final isGatewayPort = port == 8081 || port == null;
+      final isLocalHost =
+          host == 'localhost' || host == '127.0.0.1' || host == '10.0.2.2';
+      if (isGatewayPort && isLocalHost) {
+        host = host == 'localhost' ? '10.0.2.2' : host;
+        port = 3300;
+      }
+    }
+
+    return '$scheme://$host${port != null ? ':$port' : ''}';
   }
 
   String _normalizeSocketPath(String path) {
@@ -201,7 +237,7 @@ class WebSocketService {
 
   Map<String, dynamic>? _safeMap(dynamic data) {
     if (data is Map) {
-      return Map<String, dynamic>.from(data as Map);
+      return Map<String, dynamic>.from(data);
     }
     return null;
   }

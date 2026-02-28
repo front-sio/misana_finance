@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:misana_finance_app/auth/session/auth_cubit.dart';
 
 import '../../coaching_routes.dart';
 import '../../data/models.dart';
@@ -15,6 +16,20 @@ class CoachingHomePage extends StatefulWidget {
 }
 
 class _CoachingHomePageState extends State<CoachingHomePage> {
+  bool _canAccessCoachDashboard() {
+    Map<String, dynamic>? user;
+    try {
+      user = BlocProvider.of<AuthCubit>(context, listen: false).state.user;
+    } catch (_) {
+      user = null;
+    }
+    final role = (user?['role'] ?? '').toString().toLowerCase().trim();
+    return role == 'coach' ||
+        role == 'admin' ||
+        role == 'manager' ||
+        role == 'staff';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -23,10 +38,28 @@ class _CoachingHomePageState extends State<CoachingHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final canAccessCoachDashboard = _canAccessCoachDashboard();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Coaching & Sessions'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            tooltip: 'My Bookings',
+            onPressed: () {
+              Navigator.of(context).pushNamed(CoachingRoutes.myBookings);
+            },
+            icon: const Icon(Icons.event_note_rounded),
+          ),
+          if (canAccessCoachDashboard)
+            IconButton(
+              tooltip: 'Coach Dashboard',
+              onPressed: () {
+                Navigator.of(context).pushNamed(CoachingRoutes.coachDashboard);
+              },
+              icon: const Icon(Icons.manage_accounts_rounded),
+            ),
+        ],
       ),
       body: BlocBuilder<CoachesBloc, CoachesState>(
         builder: (context, state) {

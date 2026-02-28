@@ -36,6 +36,7 @@ class Topic {
   final double price15;
   final double price30;
   final String currency;
+  final bool isActive;
 
   Topic({
     required this.id,
@@ -43,6 +44,7 @@ class Topic {
     required this.price15,
     required this.price30,
     required this.currency,
+    this.isActive = true,
     this.description,
   });
 
@@ -54,6 +56,7 @@ class Topic {
       price15: _toDouble(json['price15']),
       price30: _toDouble(json['price30']),
       currency: (json['currency'] as String?) ?? 'TZS',
+      isActive: json['isActive'] as bool? ?? true,
     );
   }
 }
@@ -115,7 +118,9 @@ class Booking {
       topicTitle: (topic['title'] as String?) ?? 'Session',
       payment: json['payment'] == null
           ? null
-          : PaymentInfo.fromJson(Map<String, dynamic>.from(json['payment'] as Map)),
+          : PaymentInfo.fromJson(
+              Map<String, dynamic>.from(json['payment'] as Map),
+            ),
     );
   }
 }
@@ -168,6 +173,104 @@ class MeetingToken {
       token: json['token'] as String,
       expiresIn: (json['expiresIn'] as num).toInt(),
       mode: (json['mode'] as String?) ?? 'AUDIO',
+    );
+  }
+}
+
+class CoachBooking {
+  final String id;
+  final String userId;
+  final String status;
+  final int durationMinutes;
+  final double amount;
+  final String topicTitle;
+  final DateTime startAt;
+  final DateTime endAt;
+
+  CoachBooking({
+    required this.id,
+    required this.userId,
+    required this.status,
+    required this.durationMinutes,
+    required this.amount,
+    required this.topicTitle,
+    required this.startAt,
+    required this.endAt,
+  });
+
+  factory CoachBooking.fromJson(Map<String, dynamic> json) {
+    final slot = Map<String, dynamic>.from(json['slot'] as Map? ?? {});
+    final topic = Map<String, dynamic>.from(json['topic'] as Map? ?? {});
+    return CoachBooking(
+      id: (json['id'] as String?) ?? '',
+      userId: (json['userId'] as String?) ?? '',
+      status: (json['status'] as String?) ?? 'UNKNOWN',
+      durationMinutes: (json['durationMinutes'] as num?)?.toInt() ?? 0,
+      amount: _toDouble(json['amount']),
+      topicTitle: (topic['title'] as String?) ?? 'Session',
+      startAt: DateTime.parse(slot['startAt'] as String),
+      endAt: DateTime.parse(slot['endAt'] as String),
+    );
+  }
+}
+
+class CoachBlockResult {
+  final String message;
+  final int blockedSlots;
+  final int alreadyBookedSlots;
+  final DateTime startAt;
+  final DateTime endAt;
+
+  CoachBlockResult({
+    required this.message,
+    required this.blockedSlots,
+    required this.alreadyBookedSlots,
+    required this.startAt,
+    required this.endAt,
+  });
+
+  factory CoachBlockResult.fromJson(Map<String, dynamic> json) {
+    final range = Map<String, dynamic>.from(json['blockedRange'] as Map? ?? {});
+    return CoachBlockResult(
+      message: (json['message'] as String?) ?? 'Blocked',
+      blockedSlots: (json['blockedSlots'] as num?)?.toInt() ?? 0,
+      alreadyBookedSlots: (json['alreadyBookedSlots'] as num?)?.toInt() ?? 0,
+      startAt: DateTime.parse(range['startAt'] as String),
+      endAt: DateTime.parse(range['endAt'] as String),
+    );
+  }
+}
+
+class UserBooking {
+  final String id;
+  final String status;
+  final int durationMinutes;
+  final double amount;
+  final String topicTitle;
+  final DateTime startAt;
+  final DateTime endAt;
+
+  UserBooking({
+    required this.id,
+    required this.status,
+    required this.durationMinutes,
+    required this.amount,
+    required this.topicTitle,
+    required this.startAt,
+    required this.endAt,
+  });
+
+  factory UserBooking.fromJson(Map<String, dynamic> json) {
+    final slot = Map<String, dynamic>.from(json['slot'] as Map? ?? {});
+    final topic = Map<String, dynamic>.from(json['topic'] as Map? ?? {});
+    return UserBooking(
+      id: (json['id'] as String?) ?? '',
+      status: (json['status'] as String?) ?? 'UNKNOWN',
+      durationMinutes: (json['durationMinutes'] as num?)?.toInt() ?? 0,
+      amount: _toDouble(json['amount']),
+      topicTitle: (topic['title'] as String?) ?? 'Session',
+      startAt: DateTime.parse(slot['startAt'] as String),
+      endAt: DateTime.parse(slot['endAt'] as String),
     );
   }
 }

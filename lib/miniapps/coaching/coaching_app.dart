@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:misana_finance_app/auth/session/auth_cubit.dart';
 
+import 'package:misana_finance_app/core/config/app_config.dart';
 import 'package:misana_finance_app/core/navigation/nav.dart';
 import 'package:misana_finance_app/core/network/api_client.dart';
 import 'package:misana_finance_app/core/storage/token_storage.dart';
@@ -21,6 +23,8 @@ import 'presentation/pages/checkout_page.dart';
 import 'presentation/pages/payment_status_page.dart';
 import 'presentation/pages/booking_details_page.dart';
 import 'presentation/pages/audio_call_page.dart';
+import 'presentation/pages/coach_dashboard_page.dart';
+import 'presentation/pages/my_bookings_page.dart';
 import 'data/models.dart';
 
 class CoachingApp extends StatefulWidget {
@@ -55,11 +59,7 @@ class _CoachingAppState extends State<CoachingApp> {
     super.initState();
     _tokenStorage = TokenStorage();
 
-    const baseUrl = String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue:
-          'http://misana-backend-misanaapi-h3pnbw-4233c5-138-68-41-254.traefik.me/api/v1',
-    );
+    const baseUrl = AppConfig.apiBaseUrl;
 
     _apiClient = ApiClient(baseUrl: baseUrl, tokenStorage: _tokenStorage);
     _repo = CoachingRepositoryImpl(CoachingRemoteDataSource(_apiClient));
@@ -110,6 +110,20 @@ class _CoachingNavigatorState extends State<CoachingNavigator> {
       GlobalKey<NavigatorState>();
 
   GlobalKey<NavigatorState> get _navKey => widget.navigatorKey ?? _localNavKey;
+
+  bool _canAccessCoachDashboard(BuildContext context) {
+    Map<String, dynamic>? user;
+    try {
+      user = BlocProvider.of<AuthCubit>(context, listen: false).state.user;
+    } catch (_) {
+      user = null;
+    }
+    final role = (user?['role'] ?? '').toString().toLowerCase().trim();
+    return role == 'coach' ||
+        role == 'admin' ||
+        role == 'manager' ||
+        role == 'staff';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -195,8 +209,17 @@ class _CoachingNavigatorState extends State<CoachingNavigator> {
               builder: (_) => BookingDetailsPage(bookingId: bookingId),
             );
           case CoachingRoutes.call:
-            final bookingId = settings.arguments;
-            if (bookingId is! String) {
+            final args = settings.arguments;
+            String? bookingId;
+            bool asCoach = false;
+            if (args is String) {
+              bookingId = args;
+            } else if (args is Map<String, dynamic>) {
+              final id = args['bookingId'];
+              if (id is String) bookingId = id;
+              asCoach = args['asCoach'] == true;
+            }
+            if (bookingId == null) {
               return MaterialPageRoute(
                 settings: settings,
                 builder: (_) => const CoachingHomePage(),
@@ -204,7 +227,24 @@ class _CoachingNavigatorState extends State<CoachingNavigator> {
             }
             return MaterialPageRoute(
               settings: settings,
-              builder: (_) => AudioCallPage(bookingId: bookingId),
+              builder: (_) =>
+                  AudioCallPage(bookingId: bookingId!, asCoach: asCoach),
+            );
+          case CoachingRoutes.myBookings:
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (_) => const MyBookingsPage(),
+            );
+          case CoachingRoutes.coachDashboard:
+            if (!_canAccessCoachDashboard(context)) {
+              return MaterialPageRoute(
+                settings: settings,
+                builder: (_) => const CoachingHomePage(),
+              );
+            }
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (_) => const CoachDashboardPage(),
             );
           default:
             return MaterialPageRoute(

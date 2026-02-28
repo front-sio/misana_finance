@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:io' show Platform;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -20,36 +19,30 @@ class ApiClient {
   static const int _maxTransientRetries = 2;
   static const Duration _baseBackoff = Duration(milliseconds: 300);
 
-  ApiClient({
-    required String baseUrl,
-    TokenStorage? tokenStorage,
-    Dio? client,
-  })  : baseUrl = _normalizeBaseUrl(baseUrl),
-        _storage = tokenStorage ?? TokenStorage(),
-        dio = client ??
-            Dio(
-              BaseOptions(
-                baseUrl: _normalizeBaseUrl(baseUrl),
-                connectTimeout: const Duration(seconds: 10),
-                receiveTimeout: const Duration(seconds: 15),
-                sendTimeout: const Duration(seconds: 10),
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                responseType: ResponseType.json,
-                followRedirects: true,
-                receiveDataWhenStatusError: true,
-              ),
-            ) {
+  ApiClient({required String baseUrl, TokenStorage? tokenStorage, Dio? client})
+    : baseUrl = _normalizeBaseUrl(baseUrl),
+      _storage = tokenStorage ?? TokenStorage(),
+      dio =
+          client ??
+          Dio(
+            BaseOptions(
+              baseUrl: _normalizeBaseUrl(baseUrl),
+              connectTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 15),
+              sendTimeout: const Duration(seconds: 10),
+              headers: {'Content-Type': 'application/json'},
+              responseType: ResponseType.json,
+              followRedirects: true,
+              receiveDataWhenStatusError: true,
+            ),
+          ) {
     _authDio = Dio(
       BaseOptions(
         baseUrl: this.baseUrl,
         connectTimeout: const Duration(seconds: 8),
         receiveTimeout: const Duration(seconds: 8),
         sendTimeout: const Duration(seconds: 8),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
       ),
     );
 
@@ -73,16 +66,25 @@ class ApiClient {
         },
         onResponse: (response, handler) {
           final method = response.requestOptions.method.toUpperCase();
-          final toastOnSuccess = response.requestOptions.extra['toastOnSuccess'] == true;
-          final isMutating = method == 'POST' || method == 'PUT' || method == 'PATCH' || method == 'DELETE';
+          final toastOnSuccess =
+              response.requestOptions.extra['toastOnSuccess'] == true;
+          final isMutating =
+              method == 'POST' ||
+              method == 'PUT' ||
+              method == 'PATCH' ||
+              method == 'DELETE';
 
           if (!response.isRedirect &&
               response.statusCode != null &&
               response.statusCode! >= 200 &&
               response.statusCode! < 300) {
             final msg = _extractServerMessage(response);
-            final suppressed = response.requestOptions.extra['suppressToast'] == true;
-            if (!suppressed && msg != null && msg.isNotEmpty && (isMutating || toastOnSuccess)) {
+            final suppressed =
+                response.requestOptions.extra['suppressToast'] == true;
+            if (!suppressed &&
+                msg != null &&
+                msg.isNotEmpty &&
+                (isMutating || toastOnSuccess)) {
               AppMessenger.success(msg);
             }
           }
@@ -112,7 +114,8 @@ class ApiClient {
 
           // NEW: allow suppressing auto-logout (e.g., for /auth/me on app start)
           final pathLower = path.toLowerCase();
-          final allow401NoLogout = req.extra['allow401NoLogout'] == true ||
+          final allow401NoLogout =
+              req.extra['allow401NoLogout'] == true ||
               pathLower == '/auth/me' ||
               pathLower.endsWith('/auth/me');
 
@@ -124,7 +127,8 @@ class ApiClient {
               if (newToken != null && newToken.isNotEmpty && !retried) {
                 final Options opts = Options(
                   method: req.method,
-                  headers: Map<String, dynamic>.from(req.headers)..['Authorization'] = 'Bearer $newToken',
+                  headers: Map<String, dynamic>.from(req.headers)
+                    ..['Authorization'] = 'Bearer $newToken',
                   responseType: req.responseType,
                   contentType: req.contentType,
                   followRedirects: req.followRedirects,
@@ -132,7 +136,8 @@ class ApiClient {
                   validateStatus: req.validateStatus,
                 );
 
-                final newExtra = Map<String, dynamic>.from(req.extra)..['_retried'] = true;
+                final newExtra = Map<String, dynamic>.from(req.extra)
+                  ..['_retried'] = true;
 
                 final response = await dio.request<dynamic>(
                   req.path,
@@ -202,9 +207,13 @@ class ApiClient {
           }
 
           if (req.extra['suppressToast'] != true) {
-            final msg = _humanizeDioError(error, includeUrl: kDebugMode ? req.uri.toString() : null);
+            final msg = _humanizeDioError(
+              error,
+              includeUrl: kDebugMode ? req.uri.toString() : null,
+            );
             if (msg != null && msg.isNotEmpty) {
-              final isNetwork = error.type == DioExceptionType.connectionError ||
+              final isNetwork =
+                  error.type == DioExceptionType.connectionError ||
                   error.type == DioExceptionType.connectionTimeout ||
                   error.type == DioExceptionType.receiveTimeout ||
                   error.type == DioExceptionType.sendTimeout;
@@ -333,10 +342,7 @@ class ApiClient {
                 'Authorization': null,
                 'Content-Type': 'application/json',
               },
-              extra: const {
-                'skipAuth': true,
-                'skipRefresh': true,
-              },
+              extra: const {'skipAuth': true, 'skipRefresh': true},
             ),
           )
           .timeout(const Duration(seconds: 8));
@@ -372,7 +378,8 @@ class ApiClient {
     if (req.method.toUpperCase() != 'GET') return false;
     final status = err.response?.statusCode ?? 0;
 
-    final isNetwork = err.type == DioExceptionType.connectionError ||
+    final isNetwork =
+        err.type == DioExceptionType.connectionError ||
         err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.sendTimeout;
@@ -392,14 +399,20 @@ class ApiClient {
 
   static String _normalizeBaseUrl(String url) {
     var u = url.trim();
+    if (u.startsWith('http:') && !u.startsWith('http://')) {
+      u = u.replaceFirst('http:', 'http://');
+    } else if (u.startsWith('https:') && !u.startsWith('https://')) {
+      u = u.replaceFirst('https:', 'https://');
+    } else if (!u.startsWith('http://') && !u.startsWith('https://')) {
+      u = 'http://$u';
+    }
+
     if (u.endsWith('/')) u = u.substring(0, u.length - 1);
 
-    if (u.contains('localhost')) {
-      if (!kIsWeb && Platform.isAndroid) {
-        u = u.replaceFirst('localhost', '10.0.2.2');
-      } else if (!kIsWeb && Platform.isIOS) {
-        // leave as is
-      }
+    if (!kIsWeb &&
+        u.contains('localhost') &&
+        defaultTargetPlatform == TargetPlatform.android) {
+      u = u.replaceFirst('localhost', '10.0.2.2');
     }
     return u;
   }
@@ -407,7 +420,9 @@ class ApiClient {
   String? _extractServerMessage(Response<dynamic>? res) {
     if (res == null) return null;
     final xMsg = res.headers.map['x-message'];
-    if (xMsg != null && xMsg.isNotEmpty && (xMsg.first).toString().trim().isNotEmpty) {
+    if (xMsg != null &&
+        xMsg.isNotEmpty &&
+        (xMsg.first).toString().trim().isNotEmpty) {
       return xMsg.first.toString();
     }
 
@@ -433,7 +448,8 @@ class ApiClient {
       return includeUrl != null ? '$serverMsg\nURL: $includeUrl' : serverMsg;
     }
 
-    String withUrl(String msg) => includeUrl != null ? '$msg\nURL: $includeUrl' : msg;
+    String withUrl(String msg) =>
+        includeUrl != null ? '$msg\nURL: $includeUrl' : msg;
 
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
@@ -441,15 +457,33 @@ class ApiClient {
       case DioExceptionType.sendTimeout:
         return withUrl('Network timeout. Please check your connection.');
       case DioExceptionType.connectionError:
-        return withUrl('Unable to connect. Please check your internet connection.');
+        return withUrl(
+          'Unable to connect. Please check your internet connection.',
+        );
       case DioExceptionType.badResponse:
         final code = e.response?.statusCode ?? 0;
-        if (code >= 500) return withUrl('Server is temporarily unavailable. Please try again.');
-        if (code == 400) return withUrl('Invalid request. Please review your input.');
-        if (code == 403) return withUrl('You don\'t have permission to perform this action.');
-        if (code == 404) return withUrl('Requested resource was not found.');
-        if (code == 409) return withUrl('Conflict detected. Please try again.');
-        if (code == 422) return withUrl('Validation error. Please check the fields and try again.');
+        if (code >= 500) {
+          return withUrl(
+            'Server is temporarily unavailable. Please try again.',
+          );
+        }
+        if (code == 400) {
+          return withUrl('Invalid request. Please review your input.');
+        }
+        if (code == 403) {
+          return withUrl('You don\'t have permission to perform this action.');
+        }
+        if (code == 404) {
+          return withUrl('Requested resource was not found.');
+        }
+        if (code == 409) {
+          return withUrl('Conflict detected. Please try again.');
+        }
+        if (code == 422) {
+          return withUrl(
+            'Validation error. Please check the fields and try again.',
+          );
+        }
         return withUrl('Request failed (HTTP $code). Please try again.');
       case DioExceptionType.cancel:
         return null;

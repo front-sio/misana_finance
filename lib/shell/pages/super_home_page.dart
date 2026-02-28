@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:misana_finance_app/auth/session/auth_cubit.dart';
 import 'package:misana_finance_app/auth/session/auth_state.dart';
+import 'package:misana_finance_app/miniapps/coaching/coaching_app.dart';
+import 'package:misana_finance_app/miniapps/coaching/coaching_routes.dart';
 import 'package:misana_finance_app/miniapps/finance/finance_app.dart';
 import 'package:misana_finance_app/miniapps/mini_app_contract.dart';
 import 'package:misana_finance_app/miniapps/mini_app_registry.dart';
@@ -77,6 +79,28 @@ class _SuperHomePageState extends State<SuperHomePage>
   }
 
   void _openFinanceRoute(String route) {
+    final finance = MiniAppRegistry.all().firstWhere(
+      (app) => app.id == 'finance',
+      orElse: () => MiniAppContract(
+        id: 'finance',
+        title: 'Finance',
+        description: '',
+        icon: Icons.payments,
+        accentColor: const Color(0xFFED702E),
+        comingSoon: true,
+        buildEntry: () => const SizedBox.shrink(),
+      ),
+    );
+    if (finance.comingSoon) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Finance is coming soon'),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     HapticFeedback.selectionClick();
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -85,6 +109,15 @@ class _SuperHomePageState extends State<SuperHomePage>
           useParentAuthCubit: true,
           initialRoute: route,
         ),
+      ),
+    );
+  }
+
+  void _openCoachingRoute(String route) {
+    HapticFeedback.selectionClick();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CoachingApp(embedded: true, initialRoute: route),
       ),
     );
   }
@@ -262,6 +295,14 @@ class _SuperHomePageState extends State<SuperHomePage>
                               ),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 12),
+                        _QuickActionCard(
+                          icon: Icons.event_note_rounded,
+                          label: 'My Bookings',
+                          accent: const Color(0xFF0EA5A4),
+                          onTap: () =>
+                              _openCoachingRoute(CoachingRoutes.myBookings),
                         ),
                         const SizedBox(height: 24),
                         _SectionHeader(

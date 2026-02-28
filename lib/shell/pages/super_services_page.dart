@@ -46,10 +46,12 @@ class _SuperServicesPageState extends State<SuperServicesPage>
     final visibleApps = query.isEmpty
         ? apps
         : apps
-            .where((app) =>
-                app.title.toLowerCase().contains(query) ||
-                app.description.toLowerCase().contains(query))
-            .toList();
+              .where(
+                (app) =>
+                    app.title.toLowerCase().contains(query) ||
+                    app.description.toLowerCase().contains(query),
+              )
+              .toList();
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -119,7 +121,11 @@ class _SuperServicesPageState extends State<SuperServicesPage>
                         final intervalStart = (index * 0.1).clamp(0.0, 0.6);
                         final itemAnim = CurvedAnimation(
                           parent: _controller,
-                          curve: Interval(intervalStart, 1.0, curve: Curves.easeOut),
+                          curve: Interval(
+                            intervalStart,
+                            1.0,
+                            curve: Curves.easeOut,
+                          ),
                         );
                         return FadeTransition(
                           opacity: itemAnim,
@@ -154,10 +160,20 @@ class _MiniAppCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: () {
+        if (app.comingSoon) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${app.title} is coming soon'),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return;
+        }
         HapticFeedback.lightImpact();
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => app.buildEntry()),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => app.buildEntry()));
       },
       borderRadius: BorderRadius.circular(20),
       child: Ink(
@@ -165,10 +181,7 @@ class _MiniAppCard extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              app.accentColor.withValues(alpha: 0.2),
-              scheme.surface,
-            ],
+            colors: [app.accentColor.withValues(alpha: 0.2), scheme.surface],
           ),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: scheme.outlineVariant),
@@ -187,7 +200,30 @@ class _MiniAppCard extends StatelessWidget {
             children: [
               Align(
                 alignment: Alignment.topRight,
-                child: Icon(Icons.arrow_outward_rounded, color: scheme.onSurfaceVariant),
+                child: app.comingSoon
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: scheme.onSurface.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: scheme.outlineVariant),
+                        ),
+                        child: Text(
+                          'Soon',
+                          style: TextStyle(
+                            color: scheme.onSurface,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11,
+                          ),
+                        ),
+                      )
+                    : Icon(
+                        Icons.arrow_outward_rounded,
+                        color: scheme.onSurfaceVariant,
+                      ),
               ),
               const SizedBox(height: 12),
               CircleAvatar(
@@ -209,23 +245,26 @@ class _MiniAppCard extends StatelessWidget {
                 app.description,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: scheme.onSurfaceVariant,
-                  height: 1.3,
-                ),
+                style: TextStyle(color: scheme.onSurfaceVariant, height: 1.3),
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
                   Text(
-                    'Open',
+                    app.comingSoon ? 'Coming soon' : 'Open',
                     style: TextStyle(
                       color: scheme.primary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Icon(Icons.arrow_forward_rounded, color: scheme.primary, size: 16),
+                  if (!app.comingSoon) ...[
+                    const SizedBox(width: 6),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: scheme.primary,
+                      size: 16,
+                    ),
+                  ],
                 ],
               ),
             ],

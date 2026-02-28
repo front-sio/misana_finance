@@ -17,21 +17,42 @@ class MeetingBloc extends Bloc<MeetingEvent, MeetingState> {
     on<ToggleSpeaker>(_onToggleSpeaker);
   }
 
-  Future<void> _onRequestToken(RequestMeetingToken event, Emitter<MeetingState> emit) async {
+  String _friendlyAgoraError(Object error, {bool duringInit = false}) {
+    final msg = error.toString();
+    if (msg.contains('result:-101') || msg.contains('ERR_INVALID_APP_ID')) {
+      return 'Agora App ID si sahihi. Weka AGORA_APP_ID halisi kwenye backend.';
+    }
+    if (duringInit && msg.contains('replace-with-agora-app-id')) {
+      return 'Agora haijasanidiwa bado. Badilisha placeholder app id kwenye server env.';
+    }
+    return msg;
+  }
+
+  Future<void> _onRequestToken(
+    RequestMeetingToken event,
+    Emitter<MeetingState> emit,
+  ) async {
     emit(state.copyWith(phase: MeetingPhase.loading, message: null));
     try {
-      final token = await repo.requestMeetingToken(bookingId: event.bookingId);
+      final token = event.asCoach
+          ? await repo.requestCoachMeetingToken(bookingId: event.bookingId)
+          : await repo.requestMeetingToken(bookingId: event.bookingId);
       emit(state.copyWith(phase: MeetingPhase.ready, token: token));
       add(const JoinMeeting());
     } catch (e) {
-      emit(state.copyWith(phase: MeetingPhase.error, message: e.toString()));
+      emit(state.copyWith(phase: MeetingPhase.error, message: _friendlyAgoraError(e)));
     }
   }
 
   Future<void> _onJoin(JoinMeeting event, Emitter<MeetingState> emit) async {
     final token = state.token;
     if (token == null) {
-      emit(state.copyWith(phase: MeetingPhase.error, message: 'Missing meeting token.'));
+      emit(
+        state.copyWith(
+          phase: MeetingPhase.error,
+          message: 'Missing meeting token.',
+        ),
+      );
       return;
     }
 
@@ -39,9 +60,15 @@ class MeetingBloc extends Bloc<MeetingEvent, MeetingState> {
       _engine ??= createAgoraRtcEngine();
       await _engine!.initialize(RtcEngineContext(appId: token.appId));
       await _engine!.enableAudio();
-      await _engine!.setChannelProfile(ChannelProfileType.channelProfileCommunication);
+      await _engine!.setChannelProfile(
+        ChannelProfileType.channelProfileCommunication,
+      );
       await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
-      await _engine!.setEnableSpeakerphone(state.speakerOn);
+      try {
+        await _engine!.setEnableSpeakerphone(state.speakerOn);
+      } catch (_) {
+        // Some devices/emulators reject speakerphone routing (-3). Continue join.
+      }
 
       await _engine!.joinChannel(
         token: token.token,
@@ -52,7 +79,12 @@ class MeetingBloc extends Bloc<MeetingEvent, MeetingState> {
 
       emit(state.copyWith(phase: MeetingPhase.joined));
     } catch (e) {
-      emit(state.copyWith(phase: MeetingPhase.error, message: e.toString()));
+      emit(
+        state.copyWith(
+          phase: MeetingPhase.error,
+          message: _friendlyAgoraError(e, duringInit: true),
+        ),
+      );
     }
   }
 
@@ -67,15 +99,25 @@ class MeetingBloc extends Bloc<MeetingEvent, MeetingState> {
     }
   }
 
-  Future<void> _onToggleMute(ToggleMute event, Emitter<MeetingState> emit) async {
+  Future<void> _onToggleMute(
+    ToggleMute event,
+    Emitter<MeetingState> emit,
+  ) async {
     final next = !state.muted;
     await _engine?.muteLocalAudioStream(next);
     emit(state.copyWith(muted: next));
   }
 
-  Future<void> _onToggleSpeaker(ToggleSpeaker event, Emitter<MeetingState> emit) async {
+  Future<void> _onToggleSpeaker(
+    ToggleSpeaker event,
+    Emitter<MeetingState> emit,
+  ) async {
     final next = !state.speakerOn;
-    await _engine?.setEnableSpeakerphone(next);
+    try {
+      await _engine?.setEnableSpeakerphone(next);
+    } catch (_) {
+      // Keep call active even if route switch is unsupported on this device.
+    }
     emit(state.copyWith(speakerOn: next));
   }
 

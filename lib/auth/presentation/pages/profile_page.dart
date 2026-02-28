@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:convert';
+import 'package:misana_finance_app/core/config/app_config.dart';
 import 'package:misana_finance_app/core/theme/app_theme.dart';
 import 'package:misana_finance_app/core/i18n/locale_cubit.dart';
 import 'package:misana_finance_app/auth/session/auth_cubit.dart';
@@ -14,7 +15,8 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
+class _ProfilePageState extends State<ProfilePage>
+    with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _scaleController;
   late Animation<double> _fadeAnimation;
@@ -23,10 +25,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   File? _selectedImage;
   bool _uploadingImage = false;
   final ImagePicker _imagePicker = ImagePicker();
-  static const _apiBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://misana-backend-misanaapi-h3pnbw-4233c5-138-68-41-254.traefik.me/api/v1',
-  );
+  static const _apiBaseUrl = AppConfig.apiBaseUrl;
 
   @override
   void initState() {
@@ -64,32 +63,34 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
   String _normalizeKycFromUser(Map<String, dynamic>? user) {
     if (user == null) return 'unknown';
-    final anyTrue = [
-      user['is_verified'],
-      user['kyc_verified'],
-      user['kycApproved'],
-      (user['profile'] is Map ? user['profile']['kyc_verified'] : null),
-    ].any((v) {
-      if (v is bool) return v;
-      if (v is String) {
-        final s = v.toLowerCase();
-        return s == 'true' ||
-            s == '1' ||
-            s == 'yes' ||
-            s == 'approved' ||
-            s == 'verified' ||
-            s == 'success';
-      }
-      return false;
-    });
+    final anyTrue =
+        [
+          user['is_verified'],
+          user['kyc_verified'],
+          user['kycApproved'],
+          (user['profile'] is Map ? user['profile']['kyc_verified'] : null),
+        ].any((v) {
+          if (v is bool) return v;
+          if (v is String) {
+            final s = v.toLowerCase();
+            return s == 'true' ||
+                s == '1' ||
+                s == 'yes' ||
+                s == 'approved' ||
+                s == 'verified' ||
+                s == 'success';
+          }
+          return false;
+        });
     if (anyTrue) return 'verified';
-    final raw = (user['kyc_status'] ??
-            user['kyc_verification'] ??
-            (user['profile'] is Map ? user['profile']['kyc_status'] : '') ??
-            '')
-        .toString()
-        .toLowerCase()
-        .trim();
+    final raw =
+        (user['kyc_status'] ??
+                user['kyc_verification'] ??
+                (user['profile'] is Map ? user['profile']['kyc_status'] : '') ??
+                '')
+            .toString()
+            .toLowerCase()
+            .trim();
     if (raw == 'approved' || raw == 'verified' || raw == 'success') {
       return 'verified';
     }
@@ -109,31 +110,71 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     'account_id': {'sw': 'ID ya Akaunti', 'en': 'Account ID'},
     'settings': {'sw': 'Mipango', 'en': 'Settings'},
     'app_language': {'sw': 'Lugha ya Programu', 'en': 'App Language'},
-    'lang_desc': {'sw': 'Badili kati ya Kiswahili na Kiingereza', 'en': 'Switch between Swahili and English'},
+    'lang_desc': {
+      'sw': 'Badili kati ya Kiswahili na Kiingereza',
+      'en': 'Switch between Swahili and English',
+    },
     'notifications': {'sw': 'Arifa', 'en': 'Notifications'},
-    'notif_desc': {'sw': 'Dhibiti arifa za programu', 'en': 'Manage app notifications'},
+    'notif_desc': {
+      'sw': 'Dhibiti arifa za programu',
+      'en': 'Manage app notifications',
+    },
     'security': {'sw': 'Usalama', 'en': 'Security'},
-    'sec_desc': {'sw': 'Dhibiti usalama wa akaunti', 'en': 'Manage account security'},
+    'sec_desc': {
+      'sw': 'Dhibiti usalama wa akaunti',
+      'en': 'Manage account security',
+    },
     'help': {'sw': 'Usaidizi', 'en': 'Help & Support'},
     'help_desc': {'sw': 'Pata msaada na maswali', 'en': 'Get help and FAQs'},
     'logout': {'sw': 'Toka', 'en': 'Logout'},
     'logout_q': {'sw': 'Toka?', 'en': 'Logout?'},
-    'logout_confirm': {'sw': 'Je, una hakika unataka kutoka kwenye akaunti yako?', 'en': 'Are you sure you want to logout from your account?'},
+    'logout_confirm': {
+      'sw': 'Je, una hakika unataka kutoka kwenye akaunti yako?',
+      'en': 'Are you sure you want to logout from your account?',
+    },
     'cancel': {'sw': 'Ghairi', 'en': 'Cancel'},
     'save': {'sw': 'Hifadhi', 'en': 'Save'},
     'app_version': {'sw': 'Toleo la Programu', 'en': 'App Version'},
-    'feature_unavailable': {'sw': 'Sehemu hii haijatekelezwa bado', 'en': 'This feature not yet available'},
+    'feature_unavailable': {
+      'sw': 'Sehemu hii haijatekelezwa bado',
+      'en': 'This feature not yet available',
+    },
     'first_name': {'sw': 'Jina la Kwanza', 'en': 'First Name'},
     'last_name': {'sw': 'Jina la Ukoo', 'en': 'Last Name'},
     'phone_number': {'sw': 'Namba ya Simu', 'en': 'Phone Number'},
-    'profile_updated': {'sw': 'Picha ya wasifu imesasishwa kikamilifu', 'en': 'Profile picture updated successfully'},
-    'image_size_error': {'sw': 'Ukubwa wa picha lazima uwe chini ya 10MB', 'en': 'Image size must be less than 10MB'},
-    'library_denied': {'sw': 'Ruhusa ya maktaba ya picha imekataliwa. Tafadhali wezesha kwenye mipangilio.', 'en': 'Photo library access denied. Please enable it in settings.'},
-    'image_cancelled': {'sw': 'Uchaguzi wa picha umeghairiwa', 'en': 'Image selection cancelled'},
-    'picker_error': {'sw': 'Imeshindikana kufungua kichagua picha. Tafadhali jaribu tena.', 'en': 'Failed to open image picker. Please try again.'},
-    'pick_error': {'sw': 'Imeshindikana kuchagua picha', 'en': 'Failed to pick image'},
-    'kyc_verified': {'sw': 'Imethibitishwa (Taarifa kamili)', 'en': 'Verified (Full Information)'},
-    'kyc_pending': {'sw': 'Inasubiri uthibitisho', 'en': 'Pending verification'},
+    'profile_updated': {
+      'sw': 'Picha ya wasifu imesasishwa kikamilifu',
+      'en': 'Profile picture updated successfully',
+    },
+    'image_size_error': {
+      'sw': 'Ukubwa wa picha lazima uwe chini ya 10MB',
+      'en': 'Image size must be less than 10MB',
+    },
+    'library_denied': {
+      'sw':
+          'Ruhusa ya maktaba ya picha imekataliwa. Tafadhali wezesha kwenye mipangilio.',
+      'en': 'Photo library access denied. Please enable it in settings.',
+    },
+    'image_cancelled': {
+      'sw': 'Uchaguzi wa picha umeghairiwa',
+      'en': 'Image selection cancelled',
+    },
+    'picker_error': {
+      'sw': 'Imeshindikana kufungua kichagua picha. Tafadhali jaribu tena.',
+      'en': 'Failed to open image picker. Please try again.',
+    },
+    'pick_error': {
+      'sw': 'Imeshindikana kuchagua picha',
+      'en': 'Failed to pick image',
+    },
+    'kyc_verified': {
+      'sw': 'Imethibitishwa (Taarifa kamili)',
+      'en': 'Verified (Full Information)',
+    },
+    'kyc_pending': {
+      'sw': 'Inasubiri uthibitisho',
+      'en': 'Pending verification',
+    },
     'kyc_rejected': {'sw': 'Imekataliwa', 'en': 'Rejected'},
     'kyc_unknown': {'sw': 'Haijulikani', 'en': 'Unknown'},
   };
@@ -195,7 +236,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
         try {
           await context.read<AuthCubit>().uploadProfilePicture(file);
-          
+
           if (mounted) {
             setState(() {
               _uploadingImage = false;
@@ -238,7 +279,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            const Icon(
+              Icons.check_circle_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -289,7 +334,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
   Widget _buildProfileImage(Map<String, dynamic> user) {
     final profilePicture = user['profile_picture'] as String?;
-    
+
     if (profilePicture != null && profilePicture.isNotEmpty) {
       final resolvedUrl = _resolveProfileUrl(profilePicture);
       if (resolvedUrl != null) {
@@ -307,7 +352,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       }
 
       try {
-        final base64Data = profilePicture.contains(',') ? profilePicture.split(',').last : profilePicture;
+        final base64Data = profilePicture.contains(',')
+            ? profilePicture.split(',').last
+            : profilePicture;
         final imageBytes = base64Decode(base64Data);
         return Image.memory(
           imageBytes,
@@ -321,25 +368,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           },
         );
       } catch (_) {
-        return const Icon(
-          Icons.person_rounded,
-          color: Colors.white,
-          size: 60,
-        );
+        return const Icon(Icons.person_rounded, color: Colors.white, size: 60);
       }
     }
-    
+
     // Show selected image during upload or default avatar
     return _selectedImage != null
-        ? Image.file(
-            _selectedImage!,
-            fit: BoxFit.cover,
-          )
-        : Icon(
-            Icons.person_rounded,
-            color: Colors.white,
-            size: 60,
-          );
+        ? Image.file(_selectedImage!, fit: BoxFit.cover)
+        : Icon(Icons.person_rounded, color: Colors.white, size: 60);
   }
 
   @override
@@ -348,7 +384,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     final lang = localeCubit.state.languageCode;
     final isSw = lang == 'sw';
     String t(String key) => _translate(key, lang);
-    
+
     final scheme = Theme.of(context).colorScheme;
     final brightness = Theme.of(context).brightness;
     final user = context.watch<AuthCubit>().state.user ?? {};
@@ -358,9 +394,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     final username = (user['username'] ?? '').toString();
     final email = (user['email'] ?? '').toString();
     final phone = (user['phone'] ?? '').toString();
-    final externalId = (user['external_account_id'] ??
-            (user['account'] is Map ? user['account']['external_account_id'] : ''))
-        .toString();
+    final externalId =
+        (user['external_account_id'] ??
+                (user['account'] is Map
+                    ? user['account']['external_account_id']
+                    : ''))
+            .toString();
 
     final kycNorm = _normalizeKycFromUser(user);
     final kycColor = _kycColor(kycNorm, brightness);
@@ -371,12 +410,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             'verified': t('kyc_verified'),
             'pending': t('kyc_pending'),
             'rejected': t('kyc_rejected'),
-            'unknown': t('kyc_unknown')
+            'unknown': t('kyc_unknown'),
           }[kycNorm] ??
           t('kyc_unknown');
     }
 
-    final fullName = ('$firstName $lastName').trim().isEmpty ? username : '$firstName $lastName';
+    final fullName = ('$firstName $lastName').trim().isEmpty
+        ? username
+        : '$firstName $lastName';
 
     return Scaffold(
       body: FadeTransition(
@@ -438,11 +479,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           ],
                           const SizedBox(height: 16),
                           OutlinedButton.icon(
-                            onPressed: () => _showEditProfileDialog(context, user, lang),
+                            onPressed: () =>
+                                _showEditProfileDialog(context, user, lang),
                             icon: const Icon(Icons.edit_rounded, size: 18),
                             label: Text(
                               t('edit_profile'),
-                              style: const TextStyle(fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
@@ -463,8 +507,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     onSelected: localeCubit.setFromCode,
                     icon: const Icon(Icons.language_rounded),
                     itemBuilder: (_) => [
-                      PopupMenuItem(value: 'sw', child: Text('🇹🇿 ${t('swahili')}')),
-                      PopupMenuItem(value: 'en', child: Text('🇬🇧 ${t('english')}')),
+                      PopupMenuItem(
+                        value: 'sw',
+                        child: Text('🇹🇿 ${t('swahili')}'),
+                      ),
+                      PopupMenuItem(
+                        value: 'en',
+                        child: Text('🇬🇧 ${t('english')}'),
+                      ),
                     ],
                   ),
                 ],
@@ -472,138 +522,134 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
                 sliver: SliverList(
-                  delegate: SliverChildListDelegate(
-                    [
-                      if (phone.isNotEmpty) ...[
-                        _ProfileInfoCard(
-                          icon: Icons.phone_rounded,
-                          label: t('phone'),
-                          value: phone,
-                          delay: 0,
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      if (externalId.isNotEmpty) ...[
-                        _ProfileInfoCard(
-                          icon: Icons.card_giftcard_rounded,
-                          label: t('account_id'),
-                          value: externalId,
-                          delay: 1,
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      _KycStatusCard(
-                        status: kycNorm,
-                        statusText: kycText(),
-                        statusColor: kycColor,
-                        statusIcon: kycIcon,
-                        isSw: isSw,
-                        onVerifyTap: () =>
-                            Navigator.of(context).pushNamed('/kyc'),
-                        delay: 2,
-                      ),
-                      const SizedBox(height: 20),
-                      _SectionTitle(
-                        title: t('settings'),
-                        delay: 3,
+                  delegate: SliverChildListDelegate([
+                    if (phone.isNotEmpty) ...[
+                      _ProfileInfoCard(
+                        icon: Icons.phone_rounded,
+                        label: t('phone'),
+                        value: phone,
+                        delay: 0,
                       ),
                       const SizedBox(height: 12),
-                      _SettingsCard(
-                        icon: Icons.language_rounded,
-                        label: t('app_language'),
-                        subtitle: t('lang_desc'),
-                        delay: 4,
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: localeCubit.state.languageCode,
-                            isDense: true,
-                            items: [
-                              DropdownMenuItem(
-                                value: 'sw',
-                                child: Text('🇹🇿 ${t('swahili')}'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'en',
-                                child: Text('🇬🇧 ${t('english')}'),
-                              ),
-                            ],
-                            onChanged: (v) {
-                              if (v != null) localeCubit.setFromCode(v);
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _SettingsCard(
-                        icon: Icons.notifications_rounded,
-                        label: t('notifications'),
-                        subtitle: t('notif_desc'),
-                        onTap: () {
-                          Navigator.of(context).pushNamed('/notifications');
-                        },
-                        delay: 5,
-                      ),
-                      const SizedBox(height: 12),
-                      _SettingsCard(
-                        icon: Icons.security_rounded,
-                        label: t('security'),
-                        subtitle: t('sec_desc'),
-                        onTap: () {
-                          Navigator.of(context).pushNamed('/security');
-                        },
-                        delay: 6,
-                      ),
-                      const SizedBox(height: 12),
-                      _SettingsCard(
-                        icon: Icons.help_rounded,
-                        label: t('help'),
-                        subtitle: t('help_desc'),
-                        onTap: () {
-                          Navigator.of(context).pushNamed('/help-support');
-                        },
-                        delay: 7,
-                      ),
-                      const SizedBox(height: 24),
-                      _AnimatedSection(
-                        delay: 8,
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _showLogoutDialog(context, lang);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.error,
-                              foregroundColor: Colors.white,
-                            ),
-                            icon: const Icon(Icons.logout_rounded),
-                            label: Text(
-                              t('logout'),
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _AnimatedSection(
-                        delay: 9,
-                        child: Text(
-                          '${t('app_version')}: 1.0.0',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: scheme.onSurfaceVariant,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
                     ],
-                  ),
+                    if (externalId.isNotEmpty) ...[
+                      _ProfileInfoCard(
+                        icon: Icons.card_giftcard_rounded,
+                        label: t('account_id'),
+                        value: externalId,
+                        delay: 1,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    _KycStatusCard(
+                      status: kycNorm,
+                      statusText: kycText(),
+                      statusColor: kycColor,
+                      statusIcon: kycIcon,
+                      isSw: isSw,
+                      onVerifyTap: () =>
+                          Navigator.of(context).pushNamed('/kyc'),
+                      delay: 2,
+                    ),
+                    const SizedBox(height: 20),
+                    _SectionTitle(title: t('settings'), delay: 3),
+                    const SizedBox(height: 12),
+                    _SettingsCard(
+                      icon: Icons.language_rounded,
+                      label: t('app_language'),
+                      subtitle: t('lang_desc'),
+                      delay: 4,
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: localeCubit.state.languageCode,
+                          isDense: true,
+                          items: [
+                            DropdownMenuItem(
+                              value: 'sw',
+                              child: Text('🇹🇿 ${t('swahili')}'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'en',
+                              child: Text('🇬🇧 ${t('english')}'),
+                            ),
+                          ],
+                          onChanged: (v) {
+                            if (v != null) localeCubit.setFromCode(v);
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _SettingsCard(
+                      icon: Icons.notifications_rounded,
+                      label: t('notifications'),
+                      subtitle: t('notif_desc'),
+                      onTap: () {
+                        Navigator.of(context).pushNamed('/notifications');
+                      },
+                      delay: 5,
+                    ),
+                    const SizedBox(height: 12),
+                    _SettingsCard(
+                      icon: Icons.security_rounded,
+                      label: t('security'),
+                      subtitle: t('sec_desc'),
+                      onTap: () {
+                        Navigator.of(context).pushNamed('/security');
+                      },
+                      delay: 6,
+                    ),
+                    const SizedBox(height: 12),
+                    _SettingsCard(
+                      icon: Icons.help_rounded,
+                      label: t('help'),
+                      subtitle: t('help_desc'),
+                      onTap: () {
+                        Navigator.of(context).pushNamed('/help-support');
+                      },
+                      delay: 7,
+                    ),
+                    const SizedBox(height: 24),
+                    _AnimatedSection(
+                      delay: 8,
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            _showLogoutDialog(context, lang);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
+                            foregroundColor: Colors.white,
+                          ),
+                          icon: const Icon(Icons.logout_rounded),
+                          label: Text(
+                            t('logout'),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _AnimatedSection(
+                      delay: 9,
+                      child: Text(
+                        '${t('app_version')}: 1.0.0',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: scheme.onSurfaceVariant,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ]),
                 ),
               ),
             ],
@@ -649,14 +695,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         scale: 1.0,
         duration: const Duration(milliseconds: 300),
         child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Text(
             _translate('logout_q', lang),
             style: const TextStyle(fontWeight: FontWeight.w800),
           ),
-          content: Text(
-            _translate('logout_confirm', lang),
-          ),
+          content: Text(_translate('logout_confirm', lang)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
@@ -666,8 +712,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               onPressed: () {
                 Navigator.pop(ctx);
                 context.read<AuthCubit>().logout();
-                Navigator.of(context)
-                    .pushNamedAndRemoveUntil('/login', (_) => false);
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/login', (_) => false);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: scheme.error,
@@ -681,11 +728,21 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  void _showEditProfileDialog(BuildContext context, Map<String, dynamic> user, String lang) {
-    final firstNameController = TextEditingController(text: user['first_name']?.toString() ?? '');
-    final lastNameController = TextEditingController(text: user['last_name']?.toString() ?? '');
-    final phoneController = TextEditingController(text: user['phone']?.toString() ?? '');
-    
+  void _showEditProfileDialog(
+    BuildContext context,
+    Map<String, dynamic> user,
+    String lang,
+  ) {
+    final firstNameController = TextEditingController(
+      text: user['first_name']?.toString() ?? '',
+    );
+    final lastNameController = TextEditingController(
+      text: user['last_name']?.toString() ?? '',
+    );
+    final phoneController = TextEditingController(
+      text: user['phone']?.toString() ?? '',
+    );
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -771,8 +828,10 @@ class _ProfilePictureSection extends StatelessWidget {
 
   Widget _buildProfileImage() {
     final profilePicture = user['profile_picture'] as String?;
-    
-    if (profilePicture != null && profilePicture.isNotEmpty && selectedImage == null) {
+
+    if (profilePicture != null &&
+        profilePicture.isNotEmpty &&
+        selectedImage == null) {
       try {
         final resolvedUrl = _resolveProfileUrl(profilePicture);
         if (resolvedUrl != null) {
@@ -789,7 +848,9 @@ class _ProfilePictureSection extends StatelessWidget {
           );
         }
 
-        final base64Data = profilePicture.contains(',') ? profilePicture.split(',').last : profilePicture;
+        final base64Data = profilePicture.contains(',')
+            ? profilePicture.split(',').last
+            : profilePicture;
         final imageBytes = base64Decode(base64Data);
         return Image.memory(
           imageBytes,
@@ -804,25 +865,14 @@ class _ProfilePictureSection extends StatelessWidget {
         );
       } catch (e) {
         // If Base64 decoding fails, show default avatar
-        return const Icon(
-          Icons.person_rounded,
-          color: Colors.white,
-          size: 60,
-        );
+        return const Icon(Icons.person_rounded, color: Colors.white, size: 60);
       }
     }
-    
+
     // Show selected image during upload or default avatar
     return selectedImage != null
-        ? Image.file(
-            selectedImage!,
-            fit: BoxFit.cover,
-          )
-        : Icon(
-            Icons.person_rounded,
-            color: Colors.white,
-            size: 60,
-          );
+        ? Image.file(selectedImage!, fit: BoxFit.cover)
+        : Icon(Icons.person_rounded, color: Colors.white, size: 60);
   }
 
   @override
@@ -861,9 +911,7 @@ class _ProfilePictureSection extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: ClipOval(
-                  child: _buildProfileImage(),
-                ),
+                child: ClipOval(child: _buildProfileImage()),
               ),
             );
           },
@@ -925,10 +973,7 @@ class _AnimatedSection extends StatelessWidget {
   final int delay;
   final Widget child;
 
-  const _AnimatedSection({
-    required this.delay,
-    required this.child,
-  });
+  const _AnimatedSection({required this.delay, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -978,11 +1023,7 @@ class _ProfileInfoCard extends StatelessWidget {
               CircleAvatar(
                 radius: 20,
                 backgroundColor: BrandColors.orange.withValues(alpha: 0.1),
-                child: Icon(
-                  icon,
-                  color: BrandColors.orange,
-                  size: 22,
-                ),
+                child: Icon(icon, color: BrandColors.orange, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1068,11 +1109,7 @@ class _KycStatusCard extends StatelessWidget {
                   CircleAvatar(
                     radius: 22,
                     backgroundColor: statusColor.withValues(alpha: 0.15),
-                    child: Icon(
-                      statusIcon,
-                      color: statusColor,
-                      size: 26,
-                    ),
+                    child: Icon(statusIcon, color: statusColor, size: 26),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -1132,10 +1169,7 @@ class _SectionTitle extends StatelessWidget {
   final String title;
   final int delay;
 
-  const _SectionTitle({
-    required this.title,
-    required this.delay,
-  });
+  const _SectionTitle({required this.title, required this.delay});
 
   @override
   Widget build(BuildContext context) {
@@ -1183,31 +1217,24 @@ class _SettingsCard extends StatelessWidget {
         elevation: 1.5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
           leading: CircleAvatar(
             radius: 20,
             backgroundColor: BrandColors.orange.withValues(alpha: 0.1),
-            child: Icon(
-              icon,
-              color: BrandColors.orange,
-              size: 22,
-            ),
+            child: Icon(icon, color: BrandColors.orange, size: 22),
           ),
           title: Text(
             label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
           ),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               subtitle,
-              style: TextStyle(
-                color: scheme.onSurfaceVariant,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
             ),
           ),
           trailing: child ?? Icon(Icons.chevron_right, color: scheme.primary),

@@ -43,12 +43,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
       body: BlocListener<BookingBloc, BookingState>(
         listener: (context, state) {
           if (state is BookingCreated) {
-            Navigator.of(context).pushReplacementNamed(
-              CoachingRoutes.payment,
-              arguments: {
-                'bookingId': state.booking.id,
-                'phoneNumber': _phoneController.text.trim(),
-              },
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              CoachingRoutes.myBookings,
+              (route) => route.settings.name == CoachingRoutes.home,
+              arguments: {'focusBookingId': state.booking.id},
             );
           }
           if (state is BookingFailure) {
@@ -98,7 +96,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               keyboardType: TextInputType.phone,
               onChanged: (_) => setState(() {}),
               decoration: const InputDecoration(
-                labelText: 'Phone number (for ClickPesa)',
+                labelText: 'Phone number (optional)',
                 hintText: '2557xxxxxxxx',
                 prefixIcon: Icon(Icons.phone),
               ),
@@ -145,19 +143,17 @@ class _CheckoutPageState extends State<CheckoutPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: _phoneController.text.trim().isEmpty
-                    ? null
-                    : () {
-                        context.read<BookingBloc>().add(
-                          CreateBooking(
-                            topicId: widget.topic.id,
-                            slotId: widget.slot.id,
-                            durationMinutes: _duration,
-                          ),
-                        );
-                      },
+                onPressed: () {
+                  context.read<BookingBloc>().add(
+                    CreateBooking(
+                      topicId: widget.topic.id,
+                      slotId: widget.slot.id,
+                      durationMinutes: _duration,
+                    ),
+                  );
+                },
                 icon: const Icon(Icons.lock_clock),
-                label: const Text('Confirm & Pay'),
+                label: const Text('Confirm Booking'),
               ),
             ),
           ],

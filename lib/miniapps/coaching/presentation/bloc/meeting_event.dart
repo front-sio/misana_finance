@@ -9,10 +9,11 @@ abstract class MeetingEvent extends Equatable {
 
 class RequestMeetingToken extends MeetingEvent {
   final String bookingId;
-  const RequestMeetingToken(this.bookingId);
+  final bool asCoach;
+  const RequestMeetingToken(this.bookingId, {this.asCoach = false});
 
   @override
-  List<Object?> get props => [bookingId];
+  List<Object?> get props => [bookingId, asCoach];
 }
 
 class JoinMeeting extends MeetingEvent {

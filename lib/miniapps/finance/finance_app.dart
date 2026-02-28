@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:misana_finance_app/core/config/app_config.dart';
 import 'package:misana_finance_app/core/navigation/nav.dart';
 import 'package:misana_finance_app/core/network/api_client.dart';
 import 'package:misana_finance_app/core/network/websocket_service.dart';
@@ -94,11 +95,7 @@ class _FinanceAppState extends State<FinanceApp> {
     super.initState();
     _tokenStorage = TokenStorage();
 
-    const baseUrl = String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue:
-          'http://misana-backend-misanaapi-h3pnbw-4233c5-138-68-41-254.traefik.me/api/v1',
-    );
+    const baseUrl = AppConfig.apiBaseUrl;
 
     _apiClient = ApiClient(baseUrl: baseUrl, tokenStorage: _tokenStorage);
     _wsService = WebSocketService(

@@ -8,8 +8,13 @@ import '../bloc/meeting_state.dart';
 
 class AudioCallPage extends StatefulWidget {
   final String bookingId;
+  final bool asCoach;
 
-  const AudioCallPage({super.key, required this.bookingId});
+  const AudioCallPage({
+    super.key,
+    required this.bookingId,
+    this.asCoach = false,
+  });
 
   @override
   State<AudioCallPage> createState() => _AudioCallPageState();
@@ -26,7 +31,9 @@ class _AudioCallPageState extends State<AudioCallPage> {
     final status = await Permission.microphone.request();
     if (!status.isGranted) return;
     if (!mounted) return;
-    context.read<MeetingBloc>().add(RequestMeetingToken(widget.bookingId));
+    context.read<MeetingBloc>().add(
+      RequestMeetingToken(widget.bookingId, asCoach: widget.asCoach),
+    );
   }
 
   @override
@@ -48,19 +55,28 @@ class _AudioCallPageState extends State<AudioCallPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
-                        onPressed: () => context.read<MeetingBloc>().add(const ToggleMute()),
+                        onPressed: () =>
+                            context.read<MeetingBloc>().add(const ToggleMute()),
                         icon: Icon(state.muted ? Icons.mic_off : Icons.mic),
                       ),
                       const SizedBox(width: 16),
                       IconButton(
-                        onPressed: () => context.read<MeetingBloc>().add(const ToggleSpeaker()),
-                        icon: Icon(state.speakerOn ? Icons.volume_up : Icons.volume_off),
+                        onPressed: () => context.read<MeetingBloc>().add(
+                          const ToggleSpeaker(),
+                        ),
+                        icon: Icon(
+                          state.speakerOn ? Icons.volume_up : Icons.volume_off,
+                        ),
                       ),
                     ],
                   ),
                 ],
                 const SizedBox(height: 24),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
                   onPressed: () {
                     context.read<MeetingBloc>().add(const LeaveMeeting());
                     Navigator.of(context).pop();

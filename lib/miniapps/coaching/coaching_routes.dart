@@ -6,4 +6,6 @@ class CoachingRoutes {
   static const String payment = '/payment';
   static const String booking = '/booking';
   static const String call = '/call';
+  static const String myBookings = '/my-bookings';
+  static const String coachDashboard = '/coach-dashboard';
 }
